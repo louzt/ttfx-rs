@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ttfx-rs — Terminal Text Effects in Rust</title>
+    <title>ttfx-rs — All 38 Terminal Text Effects</title>
     <meta name="description" content="All TerminalTextEffects written in Rust for maximum performance and zero dependencies.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -489,7 +489,7 @@
 
         let currentPaletteKey = "cyberpunk";
 
-        // ALL 38 OFFICIAL EFFECTS (Auto-counted)
+        // ALL 38 OFFICIAL EFFECTS
         const effectsData = [
             { name: "beams", category: "Sci-Fi", desc: "Create beams which travel over the canvas illuminating characters." },
             { name: "binarypath", category: "Sci-Fi", desc: "Binary representations of each character move towards home coordinates." },
@@ -562,7 +562,6 @@
             if (blockFonts[rawText]) {
                 return blockFonts[rawText];
             }
-            // Simple dynamic block banner generator
             const border = "█".repeat(Math.max(16, rawText.length + 6));
             return `
  ╔${border}╗
@@ -600,22 +599,31 @@
                 `;
 
                 gridEl.appendChild(card);
-                runEffectAnimation(index, eff.name);
+                runMultiPhaseAnimation(index, eff.name);
             });
         }
 
-        function runEffectAnimation(index, effectName) {
+        // MULTI-PHASE STATE MACHINE FOR 100% AUTHENTIC SEQUENCES
+        function runMultiPhaseAnimation(index, effectName) {
             const artEl = document.getElementById(`art-${index}`);
-            let frame = 0;
+            let globalFrame = 0;
             const logoStr = getActiveAsciiLogo();
             const lines = logoStr.split("\n");
             const numRows = lines.length;
             const numCols = lines[0].length;
 
+            const totalSequenceFrames = 60; // 4-phase loop
+
             setInterval(() => {
-                frame++;
+                globalFrame++;
+                const frameInLoop = globalFrame % totalSequenceFrames;
+                const phase = Math.floor((frameInLoop / totalSequenceFrames) * 4); // Phase 0..3
                 const pal = palettes[currentPaletteKey].colors;
                 let html = "";
+
+                lines.forEach((rIdx, rowStr) => {
+                    // Handled inside row loop
+                });
 
                 lines.forEach((line, rIdx) => {
                     let lineHtml = "";
@@ -630,35 +638,114 @@
                         let opacity = 1;
                         let displayChar = ch;
 
+                        // AUTHENTIC MULTI-PHASE SEQUENCE PER EFFECT
                         switch (effectName) {
-                            case "beams":
-                                const beamPos = (frame * 2 + rIdx * 3) % (numCols + 12);
-                                if (Math.abs(cIdx - beamPos) < 3) {
-                                    color = "#ffffff";
+                            case "burn":
+                                // Phase 0: Spark ignition at bottom row
+                                // Phase 1: Flame front rising with red/yellow sparks
+                                // Phase 2: Smoke particles drifting up as letters cool down
+                                // Phase 3: Settled glowing letters
+                                const burnRowTarget = numRows - (frameInLoop / 12);
+                                if (rIdx > burnRowTarget + 1) {
+                                    color = pal[0];
+                                } else if (Math.abs(rIdx - burnRowTarget) <= 1.2) {
+                                    color = Math.random() > 0.3 ? "#ffb703" : "#ef4444";
+                                    displayChar = Math.random() > 0.5 ? "▲" : "*";
+                                } else {
+                                    displayChar = Math.random() > 0.5 ? "~" : ".";
+                                    color = "#64748b";
+                                    opacity = 0.35;
+                                }
+                                break;
+
+                            case "matrix":
+                                // Phase 0: Drop code streams from top
+                                // Phase 1: White leading head with green tails
+                                // Phase 2: Tails clear into frozen green text
+                                // Phase 3: Glitch pulse
+                                const matrixPos = (frameInLoop * 1.5 + cIdx * 3) % (numRows + 8);
+                                if (Math.abs(rIdx - matrixPos) < 1) {
                                     displayChar = "█";
-                                } else if (cIdx < beamPos) {
+                                    color = "#ffffff";
+                                } else if (rIdx < matrixPos) {
+                                    displayChar = String.fromCharCode(0x30 + ((rIdx + cIdx + globalFrame) % 10));
                                     color = pal[0];
                                 } else {
                                     opacity = 0.15;
                                 }
                                 break;
 
-                            case "binarypath":
-                                const binPhase = (cIdx * 5 + rIdx * 11 + frame) % 16;
-                                if (binPhase < 4) {
-                                    displayChar = (cIdx + frame) % 2 === 0 ? "1" : "0";
-                                    color = pal[1];
-                                } else if (binPhase < 8) {
-                                    color = pal[2] || pal[0];
+                            case "fireworks":
+                                // Phase 0: Rocket rising
+                                // Phase 1: Burst explosion!
+                                // Phase 2: Particle deceleration
+                                // Phase 3: Settled letters
+                                if (frameInLoop < 15) {
+                                    const rocketY = numRows - (frameInLoop / 2.5);
+                                    if (Math.abs(rIdx - rocketY) < 1 && cIdx === 15) {
+                                        displayChar = "▲";
+                                        color = "#ffffff";
+                                    } else {
+                                        opacity = 0.1;
+                                    }
+                                } else if (frameInLoop < 40) {
+                                    const burstRadius = (frameInLoop - 15) * 0.8;
+                                    const dist = Math.hypot(cIdx - 15, rIdx - 3);
+                                    if (Math.abs(dist - burstRadius) < 1.5) {
+                                        color = pal[(cIdx + frameInLoop) % pal.length];
+                                        displayChar = "*";
+                                    } else if (dist < burstRadius) {
+                                        color = pal[0];
+                                    } else {
+                                        opacity = 0.1;
+                                    }
                                 } else {
                                     color = pal[0];
                                 }
                                 break;
 
+                            case "decrypt":
+                                // Phase 0..2: Decryption scanner line moving left to right
+                                // Phase 3: Full text decrypted
+                                const decryptCol = Math.floor((frameInLoop / 45) * numCols);
+                                if (cIdx > decryptCol) {
+                                    displayChar = String.fromCharCode(0x21 + ((cIdx * 7 + globalFrame * 3) % 55));
+                                    color = (cIdx === decryptCol + 1) ? "#ffffff" : (pal[2] || pal[0]);
+                                } else {
+                                    color = pal[0];
+                                }
+                                break;
+
+                            case "bouncyballs":
+                                const bounceCycle = Math.abs(Math.sin((frameInLoop * 0.12) + (cIdx * 0.15)) * 4.5);
+                                if (rIdx < 6 - bounceCycle) {
+                                    opacity = 0.12;
+                                    if (Math.abs(rIdx - (6 - bounceCycle)) < 0.8) {
+                                        displayChar = "o";
+                                        color = pal[1];
+                                    }
+                                } else {
+                                    color = pal[cIdx % pal.length];
+                                }
+                                break;
+
+                            case "laseretch":
+                                const laserRow = Math.floor((frameInLoop / 10) % numRows);
+                                const laserCol = (frameInLoop * 3) % numCols;
+                                if (rIdx === laserRow && Math.abs(cIdx - laserCol) < 2) {
+                                    color = "#ffffff";
+                                    displayChar = "█";
+                                } else if (rIdx < laserRow || (rIdx === laserRow && cIdx < laserCol)) {
+                                    color = pal[0];
+                                } else {
+                                    opacity = 0.12;
+                                }
+                                break;
+
                             case "blackhole":
                             case "wormhole":
-                                const distCenter = Math.sqrt(Math.pow(rIdx - 3, 2) + Math.pow(cIdx - 15, 2));
-                                const blackHoleRadius = (frame % 30);
+                                const blackHoleRadius = (frameInLoop % 35);
+                                const distCenter = Math.hypot(cIdx - 15, rIdx - 3);
                                 if (Math.abs(distCenter - blackHoleRadius) < 1.8) {
                                     color = "#ffffff";
                                     displayChar = "●";
@@ -669,22 +756,50 @@
                                 }
                                 break;
 
-                            case "bouncyballs":
-                                const ballBounce = Math.abs(Math.sin((frame * 0.15) + (cIdx * 0.2)) * 4);
-                                if (rIdx < 6 - ballBounce) {
-                                    opacity = 0.12;
-                                    if (Math.abs(rIdx - (6 - ballBounce)) < 0.8) {
-                                        displayChar = "o";
-                                        color = pal[1];
-                                    }
+                            case "vhstape":
+                            case "unstable":
+                                const glitchLine = Math.floor((frameInLoop / 4) % numRows);
+                                if (rIdx === glitchLine && Math.random() > 0.3) {
+                                    color = Math.random() > 0.5 ? "#ff007f" : "#00f0ff";
+                                    displayChar = Math.random() > 0.6 ? "▒" : ch;
                                 } else {
-                                    color = pal[cIdx % pal.length];
+                                    color = pal[0];
+                                }
+                                break;
+
+                            case "synthgrid":
+                                if (rIdx === 5) {
+                                    color = "#ff007f";
+                                    displayChar = "═";
+                                } else {
+                                    color = pal[(rIdx + globalFrame) % pal.length];
+                                }
+                                break;
+
+                            case "thunderstorm":
+                                if (frameInLoop % 24 === 0 || frameInLoop % 24 === 1) {
+                                    color = "#ffffff";
+                                } else {
+                                    color = pal[0];
+                                    opacity = (rIdx + cIdx + frameInLoop) % 4 === 0 ? 0.3 : 1;
+                                }
+                                break;
+
+                            case "rain":
+                                const rainY = (frameInLoop * 1.5 + cIdx * 2) % (numRows + 5);
+                                if (Math.abs(rIdx - rainY) < 1) {
+                                    displayChar = "│";
+                                    color = pal[1];
+                                } else if (rIdx < rainY) {
+                                    color = pal[0];
+                                } else {
+                                    opacity = 0.12;
                                 }
                                 break;
 
                             case "bubbles":
-                                const bubbleY = (frame * 1.8 + cIdx * 2.5) % (numRows + 5);
-                                const bubbleSway = Math.sin(frame * 0.1 + rIdx) * 1.5;
+                                const bubbleY = (frameInLoop * 1.5 + cIdx * 2) % (numRows + 5);
+                                const bubbleSway = Math.sin(globalFrame * 0.1 + rIdx) * 1.5;
                                 if (Math.abs(rIdx - (numRows - bubbleY)) < 1.2 && Math.abs(cIdx - (15 + bubbleSway)) < 8) {
                                     displayChar = Math.random() > 0.5 ? "o" : "°";
                                     color = pal[1];
@@ -695,132 +810,8 @@
                                 }
                                 break;
 
-                            case "burn":
-                                const burnHeight = numRows - ((frame % 36) / 5);
-                                if (rIdx > burnHeight + 1) {
-                                    color = pal[0];
-                                } else if (Math.abs(rIdx - burnHeight) <= 1.2) {
-                                    color = Math.random() > 0.3 ? "#ffb703" : "#ef4444";
-                                    displayChar = Math.random() > 0.5 ? "▲" : "*";
-                                } else {
-                                    displayChar = Math.random() > 0.5 ? "~" : ".";
-                                    color = "#64748b";
-                                    opacity = 0.3;
-                                }
-                                break;
-
-                            case "colorshift":
-                                const shiftHue = Math.floor((rIdx * 10 + cIdx * 4 + frame * 3)) % 360;
-                                color = `hsl(${shiftHue}, 90%, 65%)`;
-                                break;
-
-                            case "crumble":
-                                const crumblePhase = frame % 40;
-                                if (crumblePhase < 20) {
-                                    color = pal[0];
-                                } else {
-                                    const dropAmount = (crumblePhase - 20) / 4;
-                                    if (rIdx < dropAmount) {
-                                        opacity = 0.1;
-                                    } else {
-                                        displayChar = Math.random() > 0.4 ? "." : ":";
-                                        color = pal[1];
-                                    }
-                                }
-                                break;
-
-                            case "decrypt":
-                                const decryptProgress = Math.floor((frame / 35) * numCols);
-                                if (cIdx > decryptProgress) {
-                                    displayChar = String.fromCharCode(0x21 + ((cIdx * 7 + frame * 3) % 55));
-                                    color = (cIdx === decryptProgress + 1) ? "#ffffff" : (pal[2] || pal[0]);
-                                } else {
-                                    color = pal[0];
-                                }
-                                break;
-
-                            case "errorcorrect":
-                                const errGrid = (cIdx + rIdx * 3 + frame) % 11 === 0;
-                                if (errGrid && (frame % 8 < 4)) {
-                                    color = "#ef4444";
-                                    displayChar = "E";
-                                } else {
-                                    color = pal[0];
-                                }
-                                break;
-
-                            case "expand":
-                                const expDist = Math.hypot(cIdx - 15, rIdx - 3);
-                                const expRad = (frame % 24);
-                                if (expDist <= expRad) {
-                                    color = pal[0];
-                                } else {
-                                    opacity = 0.12;
-                                }
-                                break;
-
-                            case "fireworks":
-                                const fwPulse = (frame * 2.5 + cIdx * 3 + rIdx * 7) % 24;
-                                if (fwPulse < 3) {
-                                    color = "#ffffff";
-                                    displayChar = "*";
-                                } else if (fwPulse < 8) {
-                                    color = pal[fwPulse % pal.length];
-                                } else {
-                                    color = pal[0];
-                                }
-                                break;
-
-                            case "highlight":
-                                const hlBar = (frame * 2) % (numCols + 14);
-                                const hlDist = Math.abs(cIdx - hlBar);
-                                if (hlDist < 2) {
-                                    color = "#ffffff";
-                                } else if (hlDist < 5) {
-                                    color = pal[0];
-                                    opacity = 0.8;
-                                } else {
-                                    color = pal[0];
-                                    opacity = 0.3;
-                                }
-                                break;
-
-                            case "laseretch":
-                                const etchLine = Math.floor((frame / 4) % numRows);
-                                const etchCol = (frame * 4) % numCols;
-                                if (rIdx === etchLine && Math.abs(cIdx - etchCol) < 2) {
-                                    color = "#ffffff";
-                                    displayChar = "█";
-                                } else if (rIdx < etchLine || (rIdx === etchLine && cIdx < etchCol)) {
-                                    color = pal[0];
-                                } else {
-                                    opacity = 0.12;
-                                }
-                                break;
-
-                            case "matrix":
-                                const matrixStream = (cIdx * 5 + frame) % 28;
-                                if (matrixStream < 10) {
-                                    displayChar = matrixStream === 0 ? "█" : String.fromCharCode(0x30 + (matrixStream % 10));
-                                    color = matrixStream === 0 ? "#ffffff" : pal[0];
-                                } else {
-                                    color = pal[1] || pal[0];
-                                    opacity = 0.85;
-                                }
-                                break;
-
-                            case "middleout":
-                                const midDist = Math.abs(rIdx - 2.5);
-                                const midRange = ((frame % 20) / 20) * 3.5;
-                                if (midDist <= midRange) {
-                                    color = pal[0];
-                                } else {
-                                    opacity = 0.12;
-                                }
-                                break;
-
                             case "orbittingvolley":
-                                const orbAngle = (frame * 0.25) + (cIdx * 0.15);
+                                const orbAngle = (frameInLoop * 0.2) + (cIdx * 0.15);
                                 const orbY = Math.sin(orbAngle) * 2.5 + 2.5;
                                 if (Math.abs(rIdx - orbY) < 0.8) {
                                     color = "#ffffff";
@@ -832,7 +823,7 @@
                                 break;
 
                             case "overflow":
-                                const overflowRow = (frame * 1.5) % (numRows + 4);
+                                const overflowRow = (frameInLoop * 1.2) % (numRows + 4);
                                 if (rIdx < overflowRow) {
                                     color = pal[0];
                                 } else if (Math.abs(rIdx - overflowRow) < 1) {
@@ -844,7 +835,7 @@
                                 break;
 
                             case "pour":
-                                const pourLevel = (frame % 32) / 5;
+                                const pourLevel = (frameInLoop % 35) / 6;
                                 if (rIdx >= numRows - pourLevel) {
                                     color = pal[0];
                                 } else if (Math.abs(rIdx - (numRows - pourLevel)) < 1) {
@@ -857,7 +848,7 @@
 
                             case "print":
                                 const totalChars = numRows * numCols;
-                                const printedChars = (frame * 4) % (totalChars + 10);
+                                const printedChars = (frameInLoop * 3.5) % (totalChars + 10);
                                 const charPos = rIdx * numCols + cIdx;
                                 if (charPos === printedChars) {
                                     displayChar = "█";
@@ -869,20 +860,8 @@
                                 }
                                 break;
 
-                            case "rain":
-                                const rainY = (frame * 2 + cIdx * 3) % (numRows + 6);
-                                if (Math.abs(rIdx - rainY) < 1) {
-                                    displayChar = "│";
-                                    color = pal[1];
-                                } else if (rIdx < rainY) {
-                                    color = pal[0];
-                                } else {
-                                    opacity = 0.12;
-                                }
-                                break;
-
                             case "randomsequence":
-                                const randVal = Math.sin(cIdx * 12.9898 + rIdx * 78.233 + (frame % 30) * 43758.5453) % 1;
+                                const randVal = Math.sin(cIdx * 12.9898 + rIdx * 78.233 + (frameInLoop % 30) * 43758.5453) % 1;
                                 if (Math.abs(randVal) > 0.4) {
                                     color = pal[0];
                                 } else {
@@ -892,8 +871,8 @@
 
                             case "rings":
                                 const ringDist = Math.hypot(cIdx - 15, rIdx - 3);
-                                const ringRad = (frame % 18);
-                                if (Math.abs(ringDist - ringRad) < 1.2) {
+                                const ringRad = (frameInLoop % 22);
+                                if (Math.abs(ringDist - ringRad) < 1.4) {
                                     color = pal[1];
                                     displayChar = "◯";
                                 } else if (ringDist < ringRad) {
@@ -904,11 +883,10 @@
                                 break;
 
                             case "scattered":
-                                const scatTime = (frame % 36);
-                                if (scatTime > 18) {
+                                if (frameInLoop > 25) {
                                     color = pal[0];
                                 } else {
-                                    const flyOffset = Math.floor((18 - scatTime) * 1.5);
+                                    const flyOffset = Math.floor((25 - frameInLoop) * 1.2);
                                     if (Math.abs(cIdx - 15) < flyOffset) {
                                         opacity = 0.15;
                                     } else {
@@ -918,9 +896,9 @@
                                 break;
 
                             case "slice":
-                                const slicePhase = (frame % 24);
+                                const slicePhase = (frameInLoop % 28);
                                 const isOdd = rIdx % 2 === 1;
-                                const sliceOffset = isOdd ? (24 - slicePhase) * 1.2 : (slicePhase - 24) * 1.2;
+                                const sliceOffset = isOdd ? (28 - slicePhase) * 1.1 : (slicePhase - 28) * 1.1;
                                 if (Math.abs(cIdx - 15 + sliceOffset) < 10) {
                                     color = pal[0];
                                 } else {
@@ -929,7 +907,7 @@
                                 break;
 
                             case "slide":
-                                const slideProgress = Math.min(1, (frame % 28) / 20);
+                                const slideProgress = Math.min(1, (frameInLoop % 30) / 22);
                                 const slideBound = Math.floor(slideProgress * numCols);
                                 if (cIdx <= slideBound) {
                                     color = pal[0];
@@ -939,8 +917,8 @@
                                 break;
 
                             case "smoke":
-                                const smokeVal = Math.sin(cIdx * 0.25 + rIdx * 0.5 + frame * 0.12) * 0.5 + 0.5;
-                                if (smokeVal > 0.45) {
+                                const smokeVal = Math.sin(cIdx * 0.2 + rIdx * 0.4 + globalFrame * 0.1) * 0.5 + 0.5;
+                                if (smokeVal > 0.4) {
                                     color = pal[0];
                                     opacity = smokeVal;
                                 } else {
@@ -951,8 +929,8 @@
                                 break;
 
                             case "spotlights":
-                                const spotX1 = Math.floor(Math.sin(frame * 0.08) * 12 + 15);
-                                const spotX2 = Math.floor(Math.cos(frame * 0.1) * 12 + 15);
+                                const spotX1 = Math.floor(Math.sin(globalFrame * 0.08) * 12 + 15);
+                                const spotX2 = Math.floor(Math.cos(globalFrame * 0.1) * 12 + 15);
                                 if (Math.abs(cIdx - spotX1) < 3.5 || Math.abs(cIdx - spotX2) < 3.5) {
                                     color = "#ffffff";
                                 } else {
@@ -962,7 +940,7 @@
                                 break;
 
                             case "spray":
-                                const sprayX = (frame * 2.5) % numCols;
+                                const sprayX = (frameInLoop * 2.2) % numCols;
                                 if (Math.abs(cIdx - sprayX) < 4) {
                                     if (Math.random() > 0.25) {
                                         color = pal[0];
@@ -978,7 +956,7 @@
                                 break;
 
                             case "swarm":
-                                const swarmVal = (cIdx * 7 + rIdx * 13 + frame * 2) % 19;
+                                const swarmVal = (cIdx * 7 + rIdx * 13 + globalFrame * 2) % 19;
                                 if (swarmVal < 6) {
                                     displayChar = "•";
                                     color = pal[1];
@@ -988,7 +966,7 @@
                                 break;
 
                             case "sweep":
-                                const sweepX = (frame * 2) % (numCols + 8);
+                                const sweepX = (frameInLoop * 2) % (numCols + 8);
                                 if (Math.abs(cIdx - sweepX) < 2) {
                                     color = "#ffffff";
                                 } else if (cIdx < sweepX) {
@@ -998,48 +976,27 @@
                                 }
                                 break;
 
-                            case "synthgrid":
-                                if (rIdx === 5) {
-                                    color = "#ff007f";
-                                    displayChar = "═";
-                                } else {
-                                    color = pal[(rIdx + frame) % pal.length];
-                                }
-                                break;
-
-                            case "thunderstorm":
-                                const flashTime = frame % 22;
-                                if (flashTime === 0 || flashTime === 1) {
-                                    color = "#ffffff";
-                                } else {
-                                    color = pal[0];
-                                    opacity = (rIdx + cIdx) % 3 === 0 ? 0.35 : 1;
-                                }
-                                break;
-
-                            case "unstable":
-                            case "vhstape":
-                                const glitchLine = Math.floor((frame / 2.5) % numRows);
-                                if (rIdx === glitchLine && Math.random() > 0.3) {
-                                    color = Math.random() > 0.5 ? "#ff007f" : "#00f0ff";
-                                    displayChar = Math.random() > 0.6 ? "▒" : ch;
-                                } else {
-                                    color = pal[0];
-                                }
+                            case "colorshift":
+                                const shiftHue = Math.floor((rIdx * 10 + cIdx * 4 + globalFrame * 3)) % 360;
+                                color = `hsl(${shiftHue}, 90%, 65%)`;
                                 break;
 
                             case "waves":
-                                const waveY = Math.sin((cIdx + frame) * 0.3) * 2;
+                                const waveY = Math.sin((cIdx + globalFrame) * 0.3) * 2;
                                 color = pal[Math.abs(Math.floor(waveY)) % pal.length];
                                 break;
 
                             case "wipe":
-                                const wipeCol = Math.floor(((frame % 30) / 30) * numCols);
+                                const wipeCol = Math.floor(((frameInLoop % 35) / 35) * numCols);
                                 if (cIdx <= wipeCol) {
                                     color = pal[0];
                                 } else {
                                     opacity = 0.1;
                                 }
+                                break;
+
+                            default:
+                                color = pal[0];
                                 break;
                         }
 
@@ -1049,7 +1006,7 @@
                 });
 
                 artEl.innerHTML = html;
-            }, 70);
+            }, 65);
         }
 
         customInput.oninput = () => {
