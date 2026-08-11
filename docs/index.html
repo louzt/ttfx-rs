@@ -142,7 +142,7 @@
             margin-top: 0.2rem;
         }
 
-        /* Controls & Carousel Bar */
+        /* Controls Bar */
         .controls-bar {
             background: var(--card-bg);
             border: 1px solid var(--card-border);
@@ -208,7 +208,7 @@
             font-weight: 700;
             color: var(--text-main);
             padding: 0 0.5rem;
-            min-width: 80px;
+            min-width: 90px;
             text-align: center;
         }
 
@@ -300,7 +300,7 @@
 
         .term-screen {
             background: var(--term-bg);
-            padding: 1rem 0.75rem;
+            padding: 1rem 0.5rem;
             height: 165px;
             display: flex;
             align-items: center;
@@ -312,8 +312,8 @@
 
         .ascii-art {
             font-family: var(--font-mono);
-            font-size: 0.62rem;
-            line-height: 1.15;
+            font-size: 0.52rem;
+            line-height: 1.1;
             white-space: pre;
             text-align: center;
             user-select: none;
@@ -485,6 +485,7 @@
         const presets = ["LOUZT", "LOUST", "4NV1L", "H3PH3ST"];
         let currentPresetIdx = 0;
 
+        // 100% PERFECTLY ALIGNED EVEN-WIDTH 2D BLOCK FONTS FOR ALL PRESETS
         const blockFonts = {
             "LOUZT": `
   ██╗      ██████╗ ██╗  ██╗███████╗████████╗
@@ -493,7 +494,7 @@
   ██║     ██║   ██║██║  ██║ ███╔╝     ██║   
   ███████╗╚██████╔╝╚█████╔╝███████╗   ██║   
   ╚══════╝ ╚═════╝  ╚════╝ ╚══════╝   ╚═╝   
-`.trim(),
+`,
             "LOUST": `
   ██╗      ██████╗ ██╗  ██╗███████╗████████╗
   ██║     ██╔═══██╗██║  ██║██╔════╝╚══██╔══╝
@@ -501,23 +502,23 @@
   ██║     ██║   ██║██║  ██║╚════██║   ██║   
   ███████╗╚██████╔╝╚█████╔╝███████║   ██║   
   ╚══════╝ ╚═════╝  ╚════╝ ╚══════╝   ╚═╝   
-`.trim(),
+`,
             "4NV1L": `
-  ██████╗ ███╗   ██╗██╗   ██╗██╗██╗
- ██╔════╝ ████╗  ██║██║   ██║██║██║
- █████╗   ██╔██╗ ██║██║   ██║██║██║
- ██╔══╝   ██║╚██╗██║╚██╗ ██╔╝██║██║
- ███████╗ ██║ ╚████║ ╚████╔╝ ██║███████╗
- ╚══════╝ ╚═╝  ╚═══╝  ╚═══╝  ╚═╝╚══════╝
-`.trim(),
+  ██╗  ██╗███╗   ██╗██╗   ██╗██╗  ██╗██╗     
+  ██║  ██║████╗  ██║██║   ██║██║  ██║██║     
+  ███████║██╔██╗ ██║██║   ██║███████║██║     
+  ╚════██║██║╚██╗██║╚██╗ ██╔╝╚════██║██║     
+       ██║██║ ╚████║ ╚████╔╝      ██║███████╗
+       ╚═╝╚═╝  ╚═══╝  ╚═══╝       ╚═╝╚══════╝
+`,
             "H3PH3ST": `
  ██╗  ██╗██████╗ ██████╗ ██╗  ██╗██████╗ ███████╗████████╗
- ██║  ██║██╔══██╗██╔══██╗██║  ██║██╔══██╗██╔════╝╚══██╔══╝
- ███████║██████╔╝██████╔╝███████║██████╔╝███████╗   ██║   
- ██╔══██║██╔═══╝ ██╔═══╝ ██╔══██║██╔═══╝ ╚════██║   ██║   
- ██║  ██║██║     ██║     ██║  ██║██║     ███████║   ██║   
- ╚═╝  ╚═╝╚═╝     ╚═╝     ╚═╝  ╚═╝╚═╝     ╚══════╝   ╚═╝   
-`.trim()
+ ██║  ██║╚════██╗██╔══██╗██║  ██║╚════██╗██╔════╝╚══██╔══╝
+ ███████║ █████╔╝██████╔╝███████║ █████╔╝███████╗   ██║   
+ ██╔══██║ ╚═══██╗██╔═══╝ ██╔══██║ ╚═══██╗╚════██║   ██║   
+ ██║  ██║██████╔╝██║     ██║  ██║██████╔╝███████║   ██║   
+ ╚═╝  ╚═╝╚═════╝ ╚═╝     ╚═╝  ╚═╝╚═════╝ ╚══════╝   ╚═╝   
+`
         };
 
         const palettes = {
@@ -529,7 +530,7 @@
         };
 
         let currentPaletteKey = "cyberpunk";
-        let activeIntervals = []; // Track intervals to prevent memory leak / lag!
+        let activeIntervals = [];
 
         const effectsData = [
             { name: "beams", category: "Sci-Fi", desc: "Create beams which travel over the canvas illuminating characters." },
@@ -603,13 +604,16 @@
             });
         }
 
-        function getActiveAsciiLogo() {
-            const preset = presets[currentPresetIdx];
-            return blockFonts[preset] || blockFonts["LOUZT"];
+        // EVEN-WIDTH ASCII LINE NORMALIZER (Prevents 2D warping/misalignment)
+        function getNormalizedLines(artString) {
+            const raw = artString.trim().split("\n");
+            let maxLen = 0;
+            raw.forEach(l => { if (l.length > maxLen) maxLen = l.length; });
+            return raw.map(l => l.padEnd(maxLen, ' '));
         }
 
         function buildGrid() {
-            clearAllIntervals(); // Memory leak prevention!
+            clearAllIntervals();
             gridEl.innerHTML = "";
             const currentPreset = presets[currentPresetIdx];
 
@@ -647,8 +651,9 @@
             if (!artEl) return;
 
             let globalFrame = 0;
-            const logoStr = getActiveAsciiLogo();
-            const lines = logoStr.split("\n");
+            const presetKey = presets[currentPresetIdx];
+            const rawArt = blockFonts[presetKey] || blockFonts["LOUZT"];
+            const lines = getNormalizedLines(rawArt);
             const numRows = lines.length;
             const numCols = lines[0].length;
             const totalSequenceFrames = 60;
@@ -672,7 +677,6 @@
                         let opacity = 1;
                         let displayChar = ch;
 
-                        // CONTINUOUS DYNAMIC MOTION FOR ALL 38 EFFECTS (NO STATIC FRAMES)
                         switch (effectName) {
                             case "beams":
                                 const beamPos = (globalFrame * 3 + rIdx * 2) % (numCols + 10);
@@ -750,7 +754,7 @@
                             case "fireworks":
                                 if (frameInLoop < 15) {
                                     const rocketY = numRows - (frameInLoop / 2.5);
-                                    if (Math.abs(rIdx - rocketY) < 1 && cIdx === 15) {
+                                    if (Math.abs(rIdx - rocketY) < 1 && cIdx === Math.floor(numCols / 2)) {
                                         displayChar = "▲";
                                         color = "#ffffff";
                                     } else {
@@ -758,7 +762,7 @@
                                     }
                                 } else if (frameInLoop < 40) {
                                     const burstRadius = (frameInLoop - 15) * 0.8;
-                                    const dist = Math.hypot(cIdx - 15, rIdx - 3);
+                                    const dist = Math.hypot(cIdx - (numCols / 2), rIdx - (numRows / 2));
                                     if (Math.abs(dist - burstRadius) < 1.5) {
                                         color = pal[(cIdx + frameInLoop) % pal.length];
                                         displayChar = "*";
@@ -811,7 +815,7 @@
                             case "blackhole":
                             case "wormhole":
                                 const blackHoleRadius = (globalFrame % 30);
-                                const distCenter = Math.hypot(cIdx - 15, rIdx - 3);
+                                const distCenter = Math.hypot(cIdx - (numCols / 2), rIdx - (numRows / 2));
                                 if (Math.abs(distCenter - blackHoleRadius) < 1.8) {
                                     color = "#ffffff";
                                     displayChar = "●";
@@ -834,7 +838,7 @@
                                 break;
 
                             case "synthgrid":
-                                if (rIdx === 5) {
+                                if (rIdx === numRows - 1) {
                                     color = "#ff007f";
                                     displayChar = "═";
                                 } else {
@@ -866,7 +870,7 @@
                             case "bubbles":
                                 const bubbleY = (globalFrame * 1.5 + cIdx * 2.5) % (numRows + 5);
                                 const bubbleSway = Math.sin(globalFrame * 0.1 + rIdx) * 1.5;
-                                if (Math.abs(rIdx - (numRows - bubbleY)) < 1.2 && Math.abs(cIdx - (15 + bubbleSway)) < 8) {
+                                if (Math.abs(rIdx - (numRows - bubbleY)) < 1.2 && Math.abs(cIdx - ((numCols / 2) + bubbleSway)) < 8) {
                                     displayChar = Math.random() > 0.5 ? "o" : "°";
                                     color = pal[1];
                                 } else if (rIdx > numRows - bubbleY) {
@@ -936,7 +940,7 @@
                                 break;
 
                             case "rings":
-                                const ringDist = Math.hypot(cIdx - 15, rIdx - 3);
+                                const ringDist = Math.hypot(cIdx - (numCols / 2), rIdx - (numRows / 2));
                                 const ringRad = (globalFrame % 22);
                                 if (Math.abs(ringDist - ringRad) < 1.4) {
                                     color = pal[1];
@@ -954,7 +958,7 @@
                                     color = pal[0];
                                 } else {
                                     const flyOffset = Math.floor((18 - scatTime) * 1.5);
-                                    if (Math.abs(cIdx - 15) < flyOffset) {
+                                    if (Math.abs(cIdx - (numCols / 2)) < flyOffset) {
                                         opacity = 0.15;
                                     } else {
                                         color = pal[0];
@@ -966,7 +970,7 @@
                                 const slicePhase = (globalFrame % 28);
                                 const isOdd = rIdx % 2 === 1;
                                 const sliceOffset = isOdd ? (28 - slicePhase) * 1.1 : (slicePhase - 28) * 1.1;
-                                if (Math.abs(cIdx - 15 + sliceOffset) < 10) {
+                                if (Math.abs(cIdx - (numCols / 2) + sliceOffset) < 10) {
                                     color = pal[0];
                                 } else {
                                     opacity = 0.12;
@@ -996,8 +1000,8 @@
                                 break;
 
                             case "spotlights":
-                                const spotX1 = Math.floor(Math.sin(globalFrame * 0.08) * 12 + 15);
-                                const spotX2 = Math.floor(Math.cos(globalFrame * 0.1) * 12 + 15);
+                                const spotX1 = Math.floor(Math.sin(globalFrame * 0.08) * (numCols / 2.5) + (numCols / 2));
+                                const spotX2 = Math.floor(Math.cos(globalFrame * 0.1) * (numCols / 2.5) + (numCols / 2));
                                 if (Math.abs(cIdx - spotX1) < 3.5 || Math.abs(cIdx - spotX2) < 3.5) {
                                     color = "#ffffff";
                                 } else {
@@ -1075,7 +1079,7 @@
                 artEl.innerHTML = html;
             }, 65);
 
-            activeIntervals.push(timerId); // Store active interval for cleanup
+            activeIntervals.push(timerId);
         }
 
         function copyCode(text) {
