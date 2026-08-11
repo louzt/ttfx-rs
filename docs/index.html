@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ttfx-rs — Terminal Text Effects in Rust</title>
+    <meta name="description" content="High-performance, zero-dependency Rust port of TerminalTextEffects with 37+ ANSI text animations.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #090a0f;
+            --surface-color: #121520;
+            --surface-border: #1e2436;
+            --accent-cyan: #00f0ff;
+            --accent-green: #00ff66;
+            --accent-purple: #9d4edd;
+            --text-main: #e2e8f0;
+            --text-muted: #94a3b8;
+            --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+            --font-mono: 'Fira Code', monospace;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: var(--font-sans);
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            padding: 2.5rem 1.5rem 1rem;
+            max-width: 1100px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            background: rgba(0, 240, 255, 0.1);
+            color: var(--accent-cyan);
+            border: 1px solid rgba(0, 240, 255, 0.3);
+            border-radius: 9999px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            letter-spacing: -0.025em;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, #ffffff 0%, #a5b4fc 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            max-width: 700px;
+        }
+
+        main {
+            flex: 1;
+            max-width: 1100px;
+            margin: 0 auto;
+            width: 100%;
+            padding: 1.5rem;
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            gap: 1.5rem;
+        }
+
+        @media (max-width: 768px) {
+            main {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .panel {
+            background: var(--surface-color);
+            border: 1px solid var(--surface-border);
+            border-radius: 12px;
+            padding: 1.25rem;
+        }
+
+        .controls-title {
+            font-size: 0.95rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+        }
+
+        .input-group {
+            margin-bottom: 1.25rem;
+        }
+
+        label {
+            display: block;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 0.4rem;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 0.6rem 0.8rem;
+            background: #0d0e14;
+            border: 1px solid var(--surface-border);
+            border-radius: 6px;
+            color: var(--text-main);
+            font-family: var(--font-mono);
+            font-size: 0.9rem;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: var(--accent-cyan);
+        }
+
+        .effects-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+            max-height: 420px;
+            overflow-y: auto;
+            padding-right: 0.3rem;
+        }
+
+        .effects-list::-webkit-scrollbar {
+            width: 5px;
+        }
+        .effects-list::-webkit-scrollbar-thumb {
+            background: var(--surface-border);
+            border-radius: 3px;
+        }
+
+        .effect-btn {
+            background: transparent;
+            border: 1px solid transparent;
+            color: var(--text-main);
+            text-align: left;
+            padding: 0.5rem 0.75rem;
+            border-radius: 6px;
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .effect-btn:hover {
+            background: rgba(255, 255, 255, 0.04);
+            border-color: var(--surface-border);
+        }
+
+        .effect-btn.active {
+            background: rgba(0, 240, 255, 0.12);
+            border-color: var(--accent-cyan);
+            color: var(--accent-cyan);
+            font-weight: 600;
+        }
+
+        .terminal-container {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            min-height: 480px;
+        }
+
+        .terminal-header {
+            background: #0f1118;
+            border-top-left-radius: 12px;
+            border-top-right-radius: 12px;
+            border: 1px solid var(--surface-border);
+            border-bottom: none;
+            padding: 0.75rem 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .terminal-dots {
+            display: flex;
+            gap: 6px;
+        }
+
+        .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+        .dot.red { background: #ff5f56; }
+        .dot.yellow { background: #ffbd2e; }
+        .dot.green { background: #27c93f; }
+
+        .terminal-title {
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .terminal-screen {
+            flex: 1;
+            background: #000000;
+            border: 1px solid var(--surface-border);
+            border-bottom-left-radius: 12px;
+            border-bottom-right-radius: 12px;
+            padding: 1.5rem;
+            font-family: var(--font-mono);
+            font-size: 1rem;
+            line-height: 1.4;
+            overflow: hidden;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: inset 0 0 40px rgba(0,0,0,0.8);
+        }
+
+        pre#output {
+            color: var(--accent-cyan);
+            white-space: pre;
+            text-shadow: 0 0 8px rgba(0, 240, 255, 0.4);
+        }
+
+        .cli-copy-box {
+            margin-top: 1rem;
+            background: #0d0e14;
+            border: 1px solid var(--surface-border);
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+        }
+
+        .cli-code {
+            color: var(--accent-green);
+        }
+
+        .copy-btn {
+            background: rgba(255,255,255,0.06);
+            border: 1px solid var(--surface-border);
+            color: var(--text-main);
+            padding: 0.3rem 0.6rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            cursor: pointer;
+        }
+        .copy-btn:hover {
+            background: rgba(255,255,255,0.12);
+        }
+
+        footer {
+            max-width: 1100px;
+            margin: 0 auto;
+            width: 100%;
+            padding: 2rem 1.5rem;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            border-top: 1px solid var(--surface-border);
+        }
+
+        footer a {
+            color: var(--accent-cyan);
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <span class="badge">Pure Rust Engine • 2ms Startup</span>
+        <h1>ttfx-rs Showcase</h1>
+        <p class="subtitle">37 Terminal Text Animation Effects rewritten in Rust for maximum performance and zero dependencies.</p>
+    </header>
+
+    <main>
+        <div class="panel">
+            <div class="controls-title">Controls</div>
+            
+            <div class="input-group">
+                <label for="custom-text">Custom Text</label>
+                <input type="text" id="custom-text" value="4NV1L RUNTIME" placeholder="Type text here...">
+            </div>
+
+            <div class="controls-title">Select Effect (37 Total)</div>
+            <div class="effects-list" id="effects-list"></div>
+        </div>
+
+        <div class="terminal-container">
+            <div class="terminal-header">
+                <div class="terminal-dots">
+                    <div class="dot red"></div>
+                    <div class="dot yellow"></div>
+                    <div class="dot green"></div>
+                </div>
+                <div class="terminal-title" id="active-effect-title">matrix — ttfx-rs</div>
+                <div></div>
+            </div>
+            <div class="terminal-screen">
+                <pre id="output">Loading animation...</pre>
+            </div>
+
+            <div class="cli-copy-box">
+                <span class="cli-code" id="cli-command">echo "4NV1L RUNTIME" | cargo run --release -- matrix</span>
+                <button class="copy-btn" onclick="copyCommand()">Copy CLI</button>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <p>Crafted by <a href="https://github.com/louzt" target="_blank">Louzt</a> • Open Source under MIT OR Apache-2.0 • <a href="https://github.com/louzt/ttfx-rs" target="_blank">GitHub Repository</a></p>
+    </footer>
+
+    <script>
+        const effects = [
+            "matrix", "vhstape", "synthgrid", "laseretch", "decrypt", "binarypath",
+            "fireworks", "thunderstorm", "burn", "bubbles", "rain", "smoke", "waves",
+            "blackhole", "wormhole", "spotlights", "bouncyballs", "orbittingvolley",
+            "rings", "swarm", "spray", "sweep", "crumble", "wipe", "slide", "slice",
+            "expand", "middleout", "pour", "print", "randomsequence", "scattered",
+            "colorshift", "highlight", "overflow", "unstable", "errorcorrect"
+        ];
+
+        let activeEffect = "matrix";
+        let animationTimer = null;
+
+        const effectsListEl = document.getElementById("effects-list");
+        const outputEl = document.getElementById("output");
+        const customTextEl = document.getElementById("custom-text");
+        const activeTitleEl = document.getElementById("active-effect-title");
+        const cliCommandEl = document.getElementById("cli-command");
+
+        function initEffectsList() {
+            effectsListEl.innerHTML = "";
+            effects.forEach(eff => {
+                const btn = document.createElement("button");
+                btn.className = `effect-btn ${eff === activeEffect ? 'active' : ''}`;
+                btn.innerHTML = `<span>${eff}</span>`;
+                btn.onclick = () => selectEffect(eff);
+                effectsListEl.appendChild(btn);
+            });
+        }
+
+        function selectEffect(eff) {
+            activeEffect = eff;
+            initEffectsList();
+            activeTitleEl.textContent = `${eff} — ttfx-rs`;
+            updateCliCommand();
+            triggerAnimation();
+        }
+
+        function updateCliCommand() {
+            const text = customTextEl.value || "4NV1L RUNTIME";
+            cliCommandEl.textContent = `echo "${text}" | cargo run --release -- ${activeEffect}`;
+        }
+
+        function triggerAnimation() {
+            if (animationTimer) clearInterval(animationTimer);
+            
+            const text = customTextEl.value || "4NV1L RUNTIME";
+            let frame = 0;
+            const maxFrames = 30;
+
+            const chars = "01#$%&@*+~?-=";
+
+            animationTimer = setInterval(() => {
+                frame++;
+                let display = "";
+
+                if (activeEffect === "matrix" || activeEffect === "binarypath") {
+                    for (let i = 0; i < text.length; i++) {
+                        if (frame < 15 && Math.random() > 0.3) {
+                            display += chars[Math.floor(Math.random() * chars.length)];
+                        } else {
+                            display += text[i];
+                        }
+                    }
+                } else if (activeEffect === "laseretch" || activeEffect === "vhstape") {
+                    const offset = frame % (text.length + 5);
+                    for (let i = 0; i < text.length; i++) {
+                        if (i <= offset) {
+                            display += text[i];
+                        } else {
+                            display += " ";
+                        }
+                    }
+                } else {
+                    const revealCount = Math.floor((frame / maxFrames) * text.length);
+                    display = text.slice(0, revealCount) + "_".repeat(Math.max(0, text.length - revealCount));
+                }
+
+                outputEl.textContent = display;
+
+                if (frame >= maxFrames) {
+                    clearInterval(animationTimer);
+                    outputEl.textContent = text;
+                }
+            }, 60);
+        }
+
+        customTextEl.oninput = () => {
+            updateCliCommand();
+            triggerAnimation();
+        };
+
+        function copyCommand() {
+            navigator.clipboard.writeText(cliCommandEl.textContent);
+            alert("CLI Command copied to clipboard!");
+        }
+
+        // Initialize
+        initEffectsList();
+        triggerAnimation();
+    </script>
+</body>
+</html>
