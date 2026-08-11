@@ -1,0 +1,8 @@
+# Ignore Rust build artifacts
+/target
+
+# GitHub Actions local run artifacts (act)
+.act/
+
+# VS Code settings
+.vscode/
