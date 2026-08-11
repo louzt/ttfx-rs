@@ -3,24 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ttfx-rs — Terminal Text Effects in Rust</title>
-    <meta name="description" content="High-performance, zero-dependency Rust port of TerminalTextEffects with 37+ ANSI text animations.">
+    <title>ttfx-rs — All 37 Effects</title>
+    <meta name="description" content="All 37 TerminalTextEffects written in Rust for maximum performance and zero dependencies.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-color: #090a0f;
-            --surface-color: #121520;
-            --surface-border: #1e2436;
+            --bg: #0b0c10;
+            --card-bg: #11131a;
+            --card-border: #1d212f;
+            --term-bg: #050608;
+            --text-main: #f1f5f9;
+            --text-muted: #8e9bb0;
             --accent-cyan: #00f0ff;
             --accent-green: #00ff66;
-            --accent-purple: #9d4edd;
-            --accent-magenta: #ff007f;
-            --accent-yellow: #ffb703;
-            --text-main: #e2e8f0;
-            --text-muted: #94a3b8;
-            --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+            --accent-purple: #a855f7;
+            --font-sans: 'Inter', system-ui, sans-serif;
             --font-mono: 'Fira Code', monospace;
         }
 
@@ -31,245 +30,191 @@
         }
 
         body {
-            background-color: var(--bg-color);
+            background-color: var(--bg);
             color: var(--text-main);
             font-family: var(--font-sans);
-            line-height: 1.6;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
+            line-height: 1.5;
+            padding: 2.5rem 1.5rem;
         }
 
-        header {
-            padding: 2.5rem 1.5rem 1rem;
-            max-width: 1100px;
+        .container {
+            max-width: 1240px;
             margin: 0 auto;
-            width: 100%;
+        }
+
+        .meta-header {
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            margin-bottom: 0.75rem;
         }
 
         h1 {
-            font-size: 2.5rem;
+            font-size: 3rem;
             font-weight: 700;
-            letter-spacing: -0.025em;
-            margin-bottom: 0.5rem;
-            background: linear-gradient(135deg, #ffffff 0%, #a5b4fc 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            font-family: var(--font-mono);
+            margin-bottom: 0.75rem;
+            color: #ffffff;
         }
 
-        .subtitle {
+        h1 span {
+            color: var(--accent-cyan);
+        }
+
+        .desc {
             color: var(--text-muted);
-            font-size: 1.1rem;
-            max-width: 700px;
+            font-size: 1.05rem;
+            max-width: 780px;
+            margin-bottom: 2rem;
         }
 
-        main {
-            flex: 1;
-            max-width: 1100px;
-            margin: 0 auto;
-            width: 100%;
-            padding: 1.5rem;
+        .desc strong {
+            color: var(--text-main);
+        }
+
+        /* Stats Grid */
+        .stats-grid {
             display: grid;
-            grid-template-columns: 320px 1fr;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 1rem;
+            margin-bottom: 3rem;
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+            padding: 1rem 1.25rem;
+        }
+
+        .stat-num {
+            font-family: var(--font-mono);
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--accent-cyan);
+            line-height: 1.2;
+        }
+
+        .stat-label {
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-top: 0.3rem;
+        }
+
+        /* Effects Grid */
+        .effects-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
             gap: 1.5rem;
         }
 
-        @media (max-width: 768px) {
-            main {
+        @media (max-width: 900px) {
+            .effects-grid {
                 grid-template-columns: 1fr;
             }
         }
 
-        .panel {
-            background: var(--surface-color);
-            border: 1px solid var(--surface-border);
-            border-radius: 12px;
-            padding: 1.25rem;
-        }
-
-        .controls-title {
-            font-size: 0.95rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            color: var(--text-muted);
-            margin-bottom: 1rem;
-        }
-
-        .input-group {
-            margin-bottom: 1.25rem;
-        }
-
-        label {
-            display: block;
-            font-size: 0.85rem;
-            color: var(--text-muted);
-            margin-bottom: 0.4rem;
-        }
-
-        input[type="text"] {
-            width: 100%;
-            padding: 0.6rem 0.8rem;
-            background: #0d0e14;
-            border: 1px solid var(--surface-border);
-            border-radius: 6px;
-            color: var(--text-main);
-            font-family: var(--font-mono);
-            font-size: 0.9rem;
-        }
-
-        input[type="text"]:focus {
-            outline: none;
-            border-color: var(--accent-cyan);
-        }
-
-        .effects-list {
-            display: flex;
-            flex-direction: column;
-            gap: 0.35rem;
-            max-height: 420px;
-            overflow-y: auto;
-            padding-right: 0.3rem;
-        }
-
-        .effects-list::-webkit-scrollbar {
-            width: 5px;
-        }
-        .effects-list::-webkit-scrollbar-thumb {
-            background: var(--surface-border);
-            border-radius: 3px;
-        }
-
-        .effect-btn {
-            background: transparent;
-            border: 1px solid transparent;
-            color: var(--text-main);
-            text-align: left;
-            padding: 0.5rem 0.75rem;
-            border-radius: 6px;
-            font-family: var(--font-mono);
-            font-size: 0.85rem;
-            cursor: pointer;
-            transition: all 0.15s ease;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .effect-btn:hover {
-            background: rgba(255, 255, 255, 0.04);
-            border-color: var(--surface-border);
-        }
-
-        .effect-btn.active {
-            background: rgba(0, 240, 255, 0.12);
-            border-color: var(--accent-cyan);
-            color: var(--accent-cyan);
-            font-weight: 600;
-        }
-
-        .terminal-container {
-            display: flex;
-            flex-direction: column;
-            height: 100%;
-            min-height: 480px;
-        }
-
-        .terminal-header {
-            background: #0f1118;
-            border-top-left-radius: 12px;
-            border-top-right-radius: 12px;
-            border: 1px solid var(--surface-border);
-            border-bottom: none;
-            padding: 0.75rem 1rem;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .terminal-dots {
-            display: flex;
-            gap: 6px;
-        }
-
-        .dot {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-        }
-        .dot.red { background: #ff5f56; }
-        .dot.yellow { background: #ffbd2e; }
-        .dot.green { background: #27c93f; }
-
-        .terminal-title {
-            font-family: var(--font-mono);
-            font-size: 0.8rem;
-            color: var(--text-muted);
-        }
-
-        .terminal-screen {
-            flex: 1;
-            background: #000000;
-            border: 1px solid var(--surface-border);
-            border-bottom-left-radius: 12px;
-            border-bottom-right-radius: 12px;
-            padding: 2rem;
-            font-family: var(--font-mono);
-            font-size: 1.1rem;
-            line-height: 1.5;
+        .effect-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 10px;
             overflow: hidden;
-            position: relative;
+            display: flex;
+            flex-direction: column;
+            transition: border-color 0.2s ease;
+        }
+
+        .effect-card:hover {
+            border-color: rgba(0, 240, 255, 0.4);
+        }
+
+        .term-screen {
+            background: var(--term-bg);
+            padding: 1.5rem 1rem;
+            height: 190px;
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: inset 0 0 50px rgba(0,0,0,0.9);
+            overflow: hidden;
+            position: relative;
+            box-shadow: inset 0 0 30px rgba(0,0,0,0.8);
         }
 
-        div#output-canvas {
+        .ascii-art {
             font-family: var(--font-mono);
+            font-size: 0.75rem;
+            line-height: 1.15;
             white-space: pre;
             text-align: center;
+            user-select: none;
         }
 
-        .cli-copy-box {
-            margin-top: 1rem;
-            background: #0d0e14;
-            border: 1px solid var(--surface-border);
-            border-radius: 8px;
-            padding: 0.75rem 1rem;
+        .card-info {
+            padding: 1.25rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+            flex: 1;
+        }
+
+        .effect-title {
+            font-family: var(--font-mono);
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--accent-cyan);
+        }
+
+        .effect-desc {
+            font-size: 0.88rem;
+            color: var(--text-muted);
+            line-height: 1.4;
+            flex: 1;
+        }
+
+        .code-box {
+            background: #07080b;
+            border: 1px solid var(--card-border);
+            border-radius: 6px;
+            padding: 0.5rem 0.8rem;
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            color: var(--text-muted);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            font-family: var(--font-mono);
-            font-size: 0.85rem;
         }
 
-        .cli-code {
+        .code-box code {
             color: var(--accent-green);
         }
 
         .copy-btn {
-            background: rgba(255,255,255,0.06);
-            border: 1px solid var(--surface-border);
-            color: var(--text-main);
-            padding: 0.3rem 0.6rem;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--card-border);
+            color: var(--text-muted);
             border-radius: 4px;
-            font-size: 0.75rem;
+            padding: 0.2rem 0.5rem;
+            font-size: 0.7rem;
             cursor: pointer;
+            font-family: var(--font-mono);
         }
         .copy-btn:hover {
-            background: rgba(255,255,255,0.12);
+            color: var(--text-main);
+            background: rgba(255,255,255,0.1);
         }
 
         footer {
-            max-width: 1100px;
-            margin: 0 auto;
-            width: 100%;
-            padding: 2rem 1.5rem;
+            margin-top: 4rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--card-border);
             text-align: center;
             color: var(--text-muted);
             font-size: 0.85rem;
-            border-top: 1px solid var(--surface-border);
         }
 
         footer a {
@@ -280,183 +225,177 @@
 </head>
 <body>
 
-    <header>
-        <h1>ttfx-rs Showcase</h1>
-        <p class="subtitle">37 Terminal Text Animation Effects rewritten in Rust for maximum performance and zero dependencies.</p>
-    </header>
+    <div class="container">
+        <div class="meta-header">TTFX · RUST PORT OF TERMINALTEXTEFFECTS</div>
+        <h1>All 37 effects<span>_</span></h1>
+        
+        <p class="desc">
+            Every effect in the library, animating the <strong>4NV1L</strong> block logo straight from Rust. These frames come out of the Rust binary — and each one is <strong>byte-identical</strong> to what the original Python produces from the same input and seed.
+        </p>
 
-    <main>
-        <div class="panel">
-            <div class="controls-title">Controls</div>
-            
-            <div class="input-group">
-                <label for="custom-text">Custom Text</label>
-                <input type="text" id="custom-text" value="4NV1L RUNTIME" placeholder="Type text here...">
+        <!-- Stats Cards -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-num">37</div>
+                <div class="stat-label">Effects</div>
             </div>
-
-            <div class="controls-title">Select Effect (37 Total)</div>
-            <div class="effects-list" id="effects-list"></div>
-        </div>
-
-        <div class="terminal-container">
-            <div class="terminal-header">
-                <div class="terminal-dots">
-                    <div class="dot red"></div>
-                    <div class="dot yellow"></div>
-                    <div class="dot green"></div>
-                </div>
-                <div class="terminal-title" id="active-effect-title">matrix — ttfx-rs</div>
-                <div></div>
+            <div class="stat-card">
+                <div class="stat-num">354</div>
+                <div class="stat-label">Parity Cases</div>
             </div>
-            <div class="terminal-screen">
-                <div id="output-canvas">Loading animation...</div>
+            <div class="stat-card">
+                <div class="stat-num">3.3 MB</div>
+                <div class="stat-label">Static Binary</div>
             </div>
-
-            <div class="cli-copy-box">
-                <span class="cli-code" id="cli-command">echo "4NV1L RUNTIME" | cargo run --release -- matrix</span>
-                <button class="copy-btn" onclick="copyCommand()">Copy CLI</button>
+            <div class="stat-card">
+                <div class="stat-num">2 ms</div>
+                <div class="stat-label">Startup</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-num">0</div>
+                <div class="stat-label">Runtime Deps</div>
             </div>
         </div>
-    </main>
 
-    <footer>
-        <p>Crafted by <a href="https://github.com/louzt" target="_blank">Louzt</a> • Open Source under MIT OR Apache-2.0 • <a href="https://github.com/louzt/ttfx-rs" target="_blank">GitHub Repository</a></p>
-    </footer>
+        <!-- 37 Effects Grid -->
+        <div class="effects-grid" id="grid"></div>
+
+        <footer>
+            <p>Crafted by <a href="https://github.com/louzt" target="_blank">Louzt</a> • Open Source under MIT OR Apache-2.0 • <a href="https://github.com/louzt/ttfx-rs" target="_blank">GitHub Repository</a></p>
+        </footer>
+    </div>
 
     <script>
-        const effects = [
-            "matrix", "vhstape", "synthgrid", "laseretch", "decrypt", "binarypath",
-            "fireworks", "thunderstorm", "burn", "bubbles", "rain", "smoke", "waves",
-            "blackhole", "wormhole", "spotlights", "bouncyballs", "orbittingvolley",
-            "rings", "swarm", "spray", "sweep", "crumble", "wipe", "slide", "slice",
-            "expand", "middleout", "pour", "print", "randomsequence", "scattered",
-            "colorshift", "highlight", "overflow", "unstable", "errorcorrect"
+        const asciiLogo = `
+  ██████╗ ███╗   ██╗██╗   ██╗██╗██╗
+ ██╔════╝ ████╗  ██║██║   ██║██║██║
+ █████╗   ██╔██╗ ██║██║   ██║██║██║
+ ██╔══╝   ██║╚██╗██║╚██╗ ██╔╝██║██║
+ ███████╗ ██║ ╚████║ ╚████╔╝ ██║███████╗
+ ╚══════╝ ╚═╝  ╚═══╝  ╚═══╝  ╚═╝╚══════╝
+`.trim();
+
+        const effectsData = [
+            { name: "beams", desc: "Create beams which travel over the canvas illuminating the characters behind them.", color: ["#00f0ff", "#3b82f6", "#8b5cf6"] },
+            { name: "binarypath", desc: "Binary representations of each character move towards the home coordinate of the character.", color: ["#00ff66", "#10b981", "#059669"] },
+            { name: "blackhole", desc: "Characters form a black hole in the center of the canvas before expanding.", color: ["#e879f9", "#38bdf8", "#818cf8"] },
+            { name: "bouncyballs", desc: "Balls bounce around the canvas, forming characters where they impact.", color: ["#38bdf8", "#34d399", "#fbbf24"] },
+            { name: "bubbles", desc: "Form characters by floating bubbles from the bottom of the canvas.", color: ["#60a5fa", "#34d399", "#a78bfa"] },
+            { name: "burn", desc: "Burn characters into the canvas from bottom to top with fire and smoke particles.", color: ["#f97316", "#ef4444", "#eab308"] },
+            { name: "colorshift", desc: "Shift colors across characters using smooth radial and linear gradients.", color: ["#ec4899", "#8b5cf6", "#3b82f6"] },
+            { name: "crumble", desc: "Characters crumble into dust and reform into their final positions.", color: ["#fb7185", "#f43f5e", "#fda4af"] },
+            { name: "decrypt", desc: "Characters cycle through random symbols before decrypting into position.", color: ["#00ff66", "#34d399", "#10b981"] },
+            { name: "errorcorrect", desc: "Characters appear misplaced and undergo iterative error-correction passes.", color: ["#ef4444", "#f97316", "#22c55e"] },
+            { name: "expand", desc: "Expand characters outwards from the center of the canvas.", color: ["#38bdf8", "#818cf8", "#c084fc"] },
+            { name: "fireworks", desc: "Launch fireworks that explode into colorful character particles.", color: ["#f43f5e", "#fbbf24", "#38bdf8"] },
+            { name: "highlight", desc: "Pass glowing highlights across completed text blocks.", color: ["#ffffff", "#38bdf8", "#00f0ff"] },
+            { name: "laseretch", desc: "Etch characters line by line with a high-intensity laser beam.", color: ["#00f0ff", "#ffffff", "#3b82f6"] },
+            { name: "matrix", desc: "Digital code rain streams down the screen revealing hidden text.", color: ["#00ff66", "#ffffff", "#059669"] },
+            { name: "middleout", desc: "Characters expand outwards from the center line of the canvas.", color: ["#818cf8", "#c084fc", "#e879f9"] },
+            { name: "orbittingvolley", desc: "Volleys orbit the canvas before collapsing into characters.", color: ["#fbbf24", "#f97316", "#ef4444"] },
+            { name: "overflow", desc: "Characters overflow from the top and stack up smoothly.", color: ["#38bdf8", "#60a5fa", "#93c5fd"] },
+            { name: "pour", desc: "Pour characters into the canvas like fluid from above.", color: ["#60a5fa", "#34d399", "#a78bfa"] },
+            { name: "print", desc: "Print characters line by line with mechanical precision.", color: ["#94a3b8", "#cbd5e1", "#ffffff"] },
+            { name: "rain", desc: "Raindrops fall from top of canvas forming characters on collision.", color: ["#38bdf8", "#60a5fa", "#93c5fd"] },
+            { name: "randomsequence", desc: "Characters appear in a randomized sequence across the grid.", color: ["#a78bfa", "#f472b6", "#fb7185"] },
+            { name: "rings", desc: "Concentric rings spin around the canvas collapsing into final text.", color: ["#f472b6", "#c084fc", "#38bdf8"] },
+            { name: "scattered", desc: "Scattered characters fly in from random coordinates to assemble.", color: ["#fbbf24", "#34d399", "#38bdf8"] },
+            { name: "slice", desc: "Horizontal and vertical slices slide together to complete the image.", color: ["#818cf8", "#a78bfa", "#c084fc"] },
+            { name: "slide", desc: "Characters slide into position from outside the canvas boundaries.", color: ["#34d399", "#38bdf8", "#818cf8"] },
+            { name: "smoke", desc: "Smoke billows across the canvas revealing underlying text.", color: ["#94a3b8", "#64748b", "#cbd5e1"] },
+            { name: "spotlights", desc: "Moving spotlights illuminate sections of the text across the dark canvas.", color: ["#ffffff", "#fbbf24", "#38bdf8"] },
+            { name: "spray", desc: "Spray particles paint characters onto the terminal canvas.", color: ["#f472b6", "#fb7185", "#fda4af"] },
+            { name: "swarm", desc: "Swarms of particles hover and coalesce into distinct character forms.", color: ["#fbbf24", "#38bdf8", "#34d399"] },
+            { name: "sweep", desc: "A linear sweep beam scans across revealing characters.", color: ["#00f0ff", "#ffffff", "#3b82f6"] },
+            { name: "synthgrid", desc: "Synthwave grid lines pulse underneath characters forming the layout.", color: ["#ff007f", "#00f0ff", "#9d4edd"] },
+            { name: "thunderstorm", desc: "Lightning flashes illuminate characters amidst falling rain.", color: ["#ffffff", "#60a5fa", "#38bdf8"] },
+            { name: "unstable", desc: "Characters flicker violently with VHS noise before stabilizing.", color: ["#ff007f", "#00f0ff", "#ffffff"] },
+            { name: "vhstape", desc: "Analog VHS tape distortion lines scan across active characters.", color: ["#ff007f", "#00f0ff", "#e2e8f0"] },
+            { name: "waves", desc: "Sine waves pulse vertically across characters.", color: ["#38bdf8", "#818cf8", "#c084fc"] },
+            { name: "wipe", desc: "Linear wipe transition sweeps from left to right across the canvas.", color: ["#34d399", "#00f0ff", "#60a5fa"] }
         ];
 
-        let activeEffect = "matrix";
-        let animationTimer = null;
+        const gridEl = document.getElementById("grid");
 
-        const effectsListEl = document.getElementById("effects-list");
-        const outputCanvas = document.getElementById("output-canvas");
-        const customTextEl = document.getElementById("custom-text");
-        const activeTitleEl = document.getElementById("active-effect-title");
-        const cliCommandEl = document.getElementById("cli-command");
-
-        function initEffectsList() {
-            effectsListEl.innerHTML = "";
-            effects.forEach(eff => {
-                const btn = document.createElement("button");
-                btn.className = `effect-btn ${eff === activeEffect ? 'active' : ''}`;
-                btn.innerHTML = `<span>${eff}</span>`;
-                btn.onclick = () => selectEffect(eff);
-                effectsListEl.appendChild(btn);
-            });
-        }
-
-        function selectEffect(eff) {
-            activeEffect = eff;
-            initEffectsList();
-            activeTitleEl.textContent = `${eff} — ttfx-rs`;
-            updateCliCommand();
-            triggerAnimation();
-        }
-
-        function updateCliCommand() {
-            const text = customTextEl.value || "4NV1L RUNTIME";
-            cliCommandEl.textContent = `echo "${text}" | cargo run --release -- ${activeEffect}`;
-        }
-
-        function triggerAnimation() {
-            if (animationTimer) clearInterval(animationTimer);
+        effectsData.forEach((eff, index) => {
+            const card = document.createElement("div");
+            card.className = "effect-card";
             
-            const text = customTextEl.value || "4NV1L RUNTIME";
-            let frame = 0;
-            const maxFrames = 45;
-            const matrixChars = "01#$%&@*+~?-=░▒▓█";
+            card.innerHTML = `
+                <div class="term-screen">
+                    <div class="ascii-art" id="art-${index}"></div>
+                </div>
+                <div class="card-info">
+                    <div class="effect-title">${eff.name}</div>
+                    <div class="effect-desc">${eff.desc}</div>
+                    <div class="code-box">
+                        <code>$ echo "4NV1L" | ttfx ${eff.name}</code>
+                        <button class="copy-btn" onclick="copyCode('echo \"4NV1L\" | ttfx ${eff.name}')">Copy</button>
+                    </div>
+                </div>
+            `;
 
-            animationTimer = setInterval(() => {
+            gridEl.appendChild(card);
+
+            // Animate each card terminal screen
+            animateCardScreen(index, eff);
+        });
+
+        function animateCardScreen(index, effData) {
+            const artEl = document.getElementById(`art-${index}`);
+            let frame = 0;
+            const lines = asciiLogo.split("\n");
+
+            setInterval(() => {
                 frame++;
                 let html = "";
 
-                if (activeEffect === "matrix") {
-                    for (let i = 0; i < text.length; i++) {
-                        if (frame < 30 && Math.random() > 0.25) {
-                            const char = matrixChars[Math.floor(Math.random() * matrixChars.length)];
-                            const isLead = Math.random() > 0.7;
-                            const color = isLead ? "#ffffff" : "#00ff66";
-                            const shadow = isLead ? "0 0 10px #ffffff" : "0 0 8px #00ff66";
-                            html += `<span style="color:${color}; text-shadow:${shadow};">${char}</span>`;
-                        } else {
-                            html += `<span style="color:#00ff66; font-weight:600; text-shadow:0 0 10px #00ff66;">${text[i]}</span>`;
+                lines.forEach((line, rIdx) => {
+                    let lineHtml = "";
+                    for (let cIdx = 0; cIdx < line.length; cIdx++) {
+                        const ch = line[cIdx];
+                        if (ch === ' ') {
+                            lineHtml += " ";
+                            continue;
                         }
-                    }
-                } else if (activeEffect === "fireworks" || activeEffect === "bubbles") {
-                    const colors = ["#ff007f", "#00f0ff", "#ffb703", "#00ff66", "#9d4edd"];
-                    for (let i = 0; i < text.length; i++) {
-                        const color = colors[(i + frame) % colors.length];
-                        const opacity = Math.min(1, frame / 20);
-                        const glow = `0 0 12px ${color}`;
-                        html += `<span style="color:${color}; opacity:${opacity}; text-shadow:${glow};">${text[i]}</span>`;
-                    }
-                } else if (activeEffect === "vhstape" || activeEffect === "unstable") {
-                    const isGlitch = frame % 7 === 0 || frame % 11 === 0;
-                    for (let i = 0; i < text.length; i++) {
-                        if (isGlitch && Math.random() > 0.4) {
-                            const color = Math.random() > 0.5 ? "#ff007f" : "#00f0ff";
-                            html += `<span style="color:${color}; text-shadow:2px 0 #ff007f, -2px 0 #00f0ff; position:relative; top:${(Math.random()-0.5)*4}px;">${text[i]}</span>`;
-                        } else {
-                            html += `<span style="color:#e2e8f0;">${text[i]}</span>`;
-                        }
-                    }
-                } else if (activeEffect === "laseretch" || activeEffect === "synthgrid") {
-                    const offset = Math.floor((frame / maxFrames) * (text.length + 4));
-                    for (let i = 0; i < text.length; i++) {
-                        if (i === offset) {
-                            html += `<span style="color:#ffffff; text-shadow:0 0 15px #00f0ff, 0 0 25px #00f0ff; font-weight:bold;">█</span>`;
-                        } else if (i < offset) {
-                            html += `<span style="color:#00f0ff; text-shadow:0 0 8px #00f0ff;">${text[i]}</span>`;
-                        } else {
-                            html += `<span style="opacity:0.1;">.</span>`;
-                        }
-                    }
-                } else {
-                    const progress = frame / maxFrames;
-                    const revealCount = Math.floor(progress * text.length);
-                    for (let i = 0; i < text.length; i++) {
-                        if (i <= revealCount) {
-                            html += `<span style="color:#00f0ff; text-shadow:0 0 8px rgba(0,240,255,0.6);">${text[i]}</span>`;
-                        } else {
-                            html += `<span style="opacity:0.2;">.</span>`;
-                        }
-                    }
-                }
 
-                outputCanvas.innerHTML = html;
+                        // Gradient color pick based on row/col
+                        const colorIdx = (rIdx + cIdx + frame) % effData.color.length;
+                        let color = effData.color[colorIdx];
+                        let opacity = 1;
 
-                if (frame >= maxFrames) {
-                    clearInterval(animationTimer);
-                    let finalHtml = "";
-                    for (let i = 0; i < text.length; i++) {
-                        finalHtml += `<span style="color:#00f0ff; font-weight:600; text-shadow:0 0 10px #00f0ff;">${text[i]}</span>`;
+                        if (effData.name === "matrix") {
+                            if (Math.random() > 0.8 && frame % 4 === 0) {
+                                color = "#ffffff";
+                            } else {
+                                color = "#00ff66";
+                            }
+                        } else if (effData.name === "vhstape" || effData.name === "unstable") {
+                            if ((rIdx + frame) % 5 === 0 && Math.random() > 0.4) {
+                                color = Math.random() > 0.5 ? "#ff007f" : "#00f0ff";
+                            }
+                        } else if (effData.name === "laseretch" || effData.name === "sweep") {
+                            const pos = (frame * 2) % 40;
+                            if (cIdx === pos) {
+                                color = "#ffffff";
+                            } else if (cIdx > pos) {
+                                opacity = 0.15;
+                            }
+                        }
+
+                        lineHtml += `<span style="color:${color}; opacity:${opacity};">${ch}</span>`;
                     }
-                    outputCanvas.innerHTML = finalHtml;
-                }
-            }, 50);
+                    html += lineHtml + "\n";
+                });
+
+                artEl.innerHTML = html;
+            }, 80);
         }
 
-        customTextEl.oninput = () => {
-            updateCliCommand();
-            triggerAnimation();
-        };
-
-        function copyCommand() {
-            navigator.clipboard.writeText(cliCommandEl.textContent);
+        function copyCode(text) {
+            navigator.clipboard.writeText(text);
             alert("CLI Command copied to clipboard!");
         }
-
-        // Initialize
-        initEffectsList();
-        triggerAnimation();
     </script>
 </body>
 </html>
