@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ttfx-rs — All 37 Effects</title>
+    <title>ttfx-rs — All 37 Terminal Text Effects</title>
     <meta name="description" content="All 37 TerminalTextEffects written in Rust for maximum performance and zero dependencies.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -13,7 +13,7 @@
             --bg: #0b0c10;
             --card-bg: #11131a;
             --card-border: #1d212f;
-            --term-bg: #050608;
+            --term-bg: #040507;
             --text-main: #f1f5f9;
             --text-muted: #8e9bb0;
             --accent-cyan: #00f0ff;
@@ -79,7 +79,7 @@
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
             gap: 1rem;
-            margin-bottom: 3rem;
+            margin-bottom: 2.5rem;
         }
 
         .stat-card {
@@ -104,6 +104,68 @@
             text-transform: uppercase;
             letter-spacing: 0.05em;
             margin-top: 0.3rem;
+        }
+
+        /* Palette Selector Bar */
+        .palette-bar {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+            padding: 0.75rem 1.25rem;
+            margin-bottom: 2.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .palette-title {
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .palette-options {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .palette-pill {
+            background: #0d0e14;
+            border: 1px solid var(--card-border);
+            color: var(--text-muted);
+            border-radius: 9999px;
+            padding: 0.3rem 0.8rem;
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .palette-pill:hover {
+            border-color: var(--accent-cyan);
+            color: var(--text-main);
+        }
+
+        .palette-pill.active {
+            background: rgba(0, 240, 255, 0.12);
+            border-color: var(--accent-cyan);
+            color: var(--accent-cyan);
+            font-weight: 600;
+        }
+
+        .swatch {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            display: inline-block;
         }
 
         /* Effects Grid */
@@ -135,19 +197,19 @@
 
         .term-screen {
             background: var(--term-bg);
-            padding: 1.5rem 1rem;
-            height: 190px;
+            padding: 1.25rem 1rem;
+            height: 185px;
             display: flex;
             align-items: center;
             justify-content: center;
             overflow: hidden;
             position: relative;
-            box-shadow: inset 0 0 30px rgba(0,0,0,0.8);
+            box-shadow: inset 0 0 35px rgba(0,0,0,0.9);
         }
 
         .ascii-art {
             font-family: var(--font-mono);
-            font-size: 0.75rem;
+            font-size: 0.72rem;
             line-height: 1.15;
             white-space: pre;
             text-align: center;
@@ -162,11 +224,27 @@
             flex: 1;
         }
 
+        .effect-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
         .effect-title {
             font-family: var(--font-mono);
             font-size: 1.1rem;
             font-weight: 700;
             color: var(--accent-cyan);
+        }
+
+        .effect-tag {
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            padding: 0.15rem 0.5rem;
+            border-radius: 4px;
+            background: rgba(255,255,255,0.05);
+            color: var(--text-muted);
+            border: 1px solid var(--card-border);
         }
 
         .effect-desc {
@@ -257,6 +335,12 @@
             </div>
         </div>
 
+        <!-- Global Palette Selector Bar -->
+        <div class="palette-bar">
+            <div class="palette-title">Global Color Theme</div>
+            <div class="palette-options" id="palette-options"></div>
+        </div>
+
         <!-- 37 Effects Grid -->
         <div class="effects-grid" id="grid"></div>
 
@@ -275,79 +359,114 @@
  ╚══════╝ ╚═╝  ╚═══╝  ╚═══╝  ╚═╝╚══════╝
 `.trim();
 
+        const palettes = {
+            cyberpunk: { name: "Cyberpunk Neon", colors: ["#00f0ff", "#ff007f", "#9d4edd", "#ffffff"] },
+            matrix: { name: "Matrix Green", colors: ["#00ff66", "#10b981", "#059669", "#ffffff"] },
+            fire: { name: "Fire & Ember", colors: ["#ffb703", "#f97316", "#ef4444", "#ffffff"] },
+            ocean: { name: "Ocean Cyan", colors: ["#00f0ff", "#38bdf8", "#3b82f6", "#ffffff"] },
+            sunset: { name: "Sunset Synth", colors: ["#f472b6", "#c084fc", "#a855f7", "#ffffff"] }
+        };
+
+        let currentPaletteKey = "cyberpunk";
+
         const effectsData = [
-            { name: "beams", desc: "Create beams which travel over the canvas illuminating the characters behind them.", color: ["#00f0ff", "#3b82f6", "#8b5cf6"] },
-            { name: "binarypath", desc: "Binary representations of each character move towards the home coordinate of the character.", color: ["#00ff66", "#10b981", "#059669"] },
-            { name: "blackhole", desc: "Characters form a black hole in the center of the canvas before expanding.", color: ["#e879f9", "#38bdf8", "#818cf8"] },
-            { name: "bouncyballs", desc: "Balls bounce around the canvas, forming characters where they impact.", color: ["#38bdf8", "#34d399", "#fbbf24"] },
-            { name: "bubbles", desc: "Form characters by floating bubbles from the bottom of the canvas.", color: ["#60a5fa", "#34d399", "#a78bfa"] },
-            { name: "burn", desc: "Burn characters into the canvas from bottom to top with fire and smoke particles.", color: ["#f97316", "#ef4444", "#eab308"] },
-            { name: "colorshift", desc: "Shift colors across characters using smooth radial and linear gradients.", color: ["#ec4899", "#8b5cf6", "#3b82f6"] },
-            { name: "crumble", desc: "Characters crumble into dust and reform into their final positions.", color: ["#fb7185", "#f43f5e", "#fda4af"] },
-            { name: "decrypt", desc: "Characters cycle through random symbols before decrypting into position.", color: ["#00ff66", "#34d399", "#10b981"] },
-            { name: "errorcorrect", desc: "Characters appear misplaced and undergo iterative error-correction passes.", color: ["#ef4444", "#f97316", "#22c55e"] },
-            { name: "expand", desc: "Expand characters outwards from the center of the canvas.", color: ["#38bdf8", "#818cf8", "#c084fc"] },
-            { name: "fireworks", desc: "Launch fireworks that explode into colorful character particles.", color: ["#f43f5e", "#fbbf24", "#38bdf8"] },
-            { name: "highlight", desc: "Pass glowing highlights across completed text blocks.", color: ["#ffffff", "#38bdf8", "#00f0ff"] },
-            { name: "laseretch", desc: "Etch characters line by line with a high-intensity laser beam.", color: ["#00f0ff", "#ffffff", "#3b82f6"] },
-            { name: "matrix", desc: "Digital code rain streams down the screen revealing hidden text.", color: ["#00ff66", "#ffffff", "#059669"] },
-            { name: "middleout", desc: "Characters expand outwards from the center line of the canvas.", color: ["#818cf8", "#c084fc", "#e879f9"] },
-            { name: "orbittingvolley", desc: "Volleys orbit the canvas before collapsing into characters.", color: ["#fbbf24", "#f97316", "#ef4444"] },
-            { name: "overflow", desc: "Characters overflow from the top and stack up smoothly.", color: ["#38bdf8", "#60a5fa", "#93c5fd"] },
-            { name: "pour", desc: "Pour characters into the canvas like fluid from above.", color: ["#60a5fa", "#34d399", "#a78bfa"] },
-            { name: "print", desc: "Print characters line by line with mechanical precision.", color: ["#94a3b8", "#cbd5e1", "#ffffff"] },
-            { name: "rain", desc: "Raindrops fall from top of canvas forming characters on collision.", color: ["#38bdf8", "#60a5fa", "#93c5fd"] },
-            { name: "randomsequence", desc: "Characters appear in a randomized sequence across the grid.", color: ["#a78bfa", "#f472b6", "#fb7185"] },
-            { name: "rings", desc: "Concentric rings spin around the canvas collapsing into final text.", color: ["#f472b6", "#c084fc", "#38bdf8"] },
-            { name: "scattered", desc: "Scattered characters fly in from random coordinates to assemble.", color: ["#fbbf24", "#34d399", "#38bdf8"] },
-            { name: "slice", desc: "Horizontal and vertical slices slide together to complete the image.", color: ["#818cf8", "#a78bfa", "#c084fc"] },
-            { name: "slide", desc: "Characters slide into position from outside the canvas boundaries.", color: ["#34d399", "#38bdf8", "#818cf8"] },
-            { name: "smoke", desc: "Smoke billows across the canvas revealing underlying text.", color: ["#94a3b8", "#64748b", "#cbd5e1"] },
-            { name: "spotlights", desc: "Moving spotlights illuminate sections of the text across the dark canvas.", color: ["#ffffff", "#fbbf24", "#38bdf8"] },
-            { name: "spray", desc: "Spray particles paint characters onto the terminal canvas.", color: ["#f472b6", "#fb7185", "#fda4af"] },
-            { name: "swarm", desc: "Swarms of particles hover and coalesce into distinct character forms.", color: ["#fbbf24", "#38bdf8", "#34d399"] },
-            { name: "sweep", desc: "A linear sweep beam scans across revealing characters.", color: ["#00f0ff", "#ffffff", "#3b82f6"] },
-            { name: "synthgrid", desc: "Synthwave grid lines pulse underneath characters forming the layout.", color: ["#ff007f", "#00f0ff", "#9d4edd"] },
-            { name: "thunderstorm", desc: "Lightning flashes illuminate characters amidst falling rain.", color: ["#ffffff", "#60a5fa", "#38bdf8"] },
-            { name: "unstable", desc: "Characters flicker violently with VHS noise before stabilizing.", color: ["#ff007f", "#00f0ff", "#ffffff"] },
-            { name: "vhstape", desc: "Analog VHS tape distortion lines scan across active characters.", color: ["#ff007f", "#00f0ff", "#e2e8f0"] },
-            { name: "waves", desc: "Sine waves pulse vertically across characters.", color: ["#38bdf8", "#818cf8", "#c084fc"] },
-            { name: "wipe", desc: "Linear wipe transition sweeps from left to right across the canvas.", color: ["#34d399", "#00f0ff", "#60a5fa"] }
+            { name: "beams", category: "Sci-Fi", desc: "Create beams which travel over the canvas illuminating the characters behind them." },
+            { name: "binarypath", category: "Sci-Fi", desc: "Binary representations of each character move towards the home coordinate of the character." },
+            { name: "blackhole", category: "Physics", desc: "Characters form a black hole in the center of the canvas before expanding." },
+            { name: "bouncyballs", category: "Physics", desc: "Balls bounce around the canvas, forming characters where they impact." },
+            { name: "bubbles", category: "Nature", desc: "Form characters by floating bubbles from the bottom of the canvas." },
+            { name: "burn", category: "Nature", desc: "Burn characters into the canvas from bottom to top with fire and smoke particles." },
+            { name: "colorshift", category: "Motion", desc: "Shift colors across characters using smooth radial and linear gradients." },
+            { name: "crumble", category: "Physics", desc: "Characters crumble into dust and reform into their final positions." },
+            { name: "decrypt", category: "Sci-Fi", desc: "Characters cycle through random symbols before decrypting into position." },
+            { name: "errorcorrect", category: "Sci-Fi", desc: "Characters appear misplaced and undergo iterative error-correction passes." },
+            { name: "expand", category: "Motion", desc: "Expand characters outwards from the center of the canvas." },
+            { name: "fireworks", category: "Nature", desc: "Launch fireworks that explode into colorful character particles." },
+            { name: "highlight", category: "Motion", desc: "Pass glowing highlights across completed text blocks." },
+            { name: "laseretch", category: "Sci-Fi", desc: "Etch characters line by line with a high-intensity laser beam." },
+            { name: "matrix", category: "Sci-Fi", desc: "Digital code rain streams down the screen revealing hidden text." },
+            { name: "middleout", category: "Wipe", desc: "Characters expand outwards from the center line of the canvas." },
+            { name: "orbittingvolley", category: "Physics", desc: "Volleys orbit the canvas before collapsing into characters." },
+            { name: "overflow", category: "Motion", desc: "Characters overflow from the top and stack up smoothly." },
+            { name: "pour", category: "Wipe", desc: "Pour characters into the canvas like fluid from above." },
+            { name: "print", category: "Wipe", desc: "Print characters line by line with mechanical precision." },
+            { name: "rain", category: "Nature", desc: "Raindrops fall from top of canvas forming characters on collision." },
+            { name: "randomsequence", category: "Wipe", desc: "Characters appear in a randomized sequence across the grid." },
+            { name: "rings", category: "Physics", desc: "Concentric rings spin around the canvas collapsing into final text." },
+            { name: "scattered", category: "Motion", desc: "Scattered characters fly in from random coordinates to assemble." },
+            { name: "slice", category: "Wipe", desc: "Horizontal and vertical slices slide together to complete the image." },
+            { name: "slide", category: "Wipe", desc: "Characters slide into position from outside the canvas boundaries." },
+            { name: "smoke", category: "Nature", desc: "Smoke billows across the canvas revealing underlying text." },
+            { name: "spotlights", category: "Motion", desc: "Moving spotlights illuminate sections of the text across the dark canvas." },
+            { name: "spray", category: "Nature", desc: "Spray particles paint characters onto the terminal canvas." },
+            { name: "swarm", category: "Physics", desc: "Swarms of particles hover and coalesce into distinct character forms." },
+            { name: "sweep", category: "Motion", desc: "A linear sweep beam scans across revealing characters." },
+            { name: "synthgrid", category: "Sci-Fi", desc: "Synthwave grid lines pulse underneath characters forming the layout." },
+            { name: "thunderstorm", category: "Nature", desc: "Lightning flashes illuminate characters amidst falling rain." },
+            { name: "unstable", category: "Sci-Fi", desc: "Characters flicker violently with VHS noise before stabilizing." },
+            { name: "vhstape", category: "Sci-Fi", desc: "Analog VHS tape distortion lines scan across active characters." },
+            { name: "waves", category: "Motion", desc: "Sine waves pulse vertically across characters." },
+            { name: "wipe", category: "Wipe", desc: "Linear wipe transition sweeps from left to right across the canvas." }
         ];
 
+        const paletteContainer = document.getElementById("palette-options");
         const gridEl = document.getElementById("grid");
 
-        effectsData.forEach((eff, index) => {
-            const card = document.createElement("div");
-            card.className = "effect-card";
-            
-            card.innerHTML = `
-                <div class="term-screen">
-                    <div class="ascii-art" id="art-${index}"></div>
-                </div>
-                <div class="card-info">
-                    <div class="effect-title">${eff.name}</div>
-                    <div class="effect-desc">${eff.desc}</div>
-                    <div class="code-box">
-                        <code>$ echo "4NV1L" | ttfx ${eff.name}</code>
-                        <button class="copy-btn" onclick="copyCode('echo \"4NV1L\" | ttfx ${eff.name}')">Copy</button>
+        function initPalettes() {
+            paletteContainer.innerHTML = "";
+            Object.keys(palettes).forEach(key => {
+                const pal = palettes[key];
+                const btn = document.createElement("button");
+                btn.className = `palette-pill ${key === currentPaletteKey ? 'active' : ''}`;
+                btn.innerHTML = `<span class="swatch" style="background:${pal.colors[0]}"></span>${pal.name}`;
+                btn.onclick = () => {
+                    currentPaletteKey = key;
+                    initPalettes();
+                };
+                paletteContainer.appendChild(btn);
+            });
+        }
+
+        function buildGrid() {
+            gridEl.innerHTML = "";
+            effectsData.forEach((eff, index) => {
+                const card = document.createElement("div");
+                card.className = "effect-card";
+                
+                card.innerHTML = `
+                    <div class="term-screen">
+                        <div class="ascii-art" id="art-${index}"></div>
                     </div>
-                </div>
-            `;
+                    <div class="card-info">
+                        <div class="effect-header">
+                            <div class="effect-title">${eff.name}</div>
+                            <div class="effect-tag">${eff.category}</div>
+                        </div>
+                        <div class="effect-desc">${eff.desc}</div>
+                        <div class="code-box">
+                            <code>$ echo "4NV1L" | ttfx ${eff.name}</code>
+                            <button class="copy-btn" onclick="copyCode('echo \"4NV1L\" | ttfx ${eff.name}')">Copy</button>
+                        </div>
+                    </div>
+                `;
 
-            gridEl.appendChild(card);
+                gridEl.appendChild(card);
 
-            // Animate each card terminal screen
-            animateCardScreen(index, eff);
-        });
+                // Run unique physics & procedural animation per effect
+                runEffectAnimation(index, eff.name);
+            });
+        }
 
-        function animateCardScreen(index, effData) {
+        function runEffectAnimation(index, effectName) {
             const artEl = document.getElementById(`art-${index}`);
             let frame = 0;
             const lines = asciiLogo.split("\n");
+            const numRows = lines.length;
+            const numCols = lines[0].length;
 
             setInterval(() => {
                 frame++;
+                const pal = palettes[currentPaletteKey].colors;
                 let html = "";
 
                 lines.forEach((line, rIdx) => {
@@ -359,43 +478,178 @@
                             continue;
                         }
 
-                        // Gradient color pick based on row/col
-                        const colorIdx = (rIdx + cIdx + frame) % effData.color.length;
-                        let color = effData.color[colorIdx];
+                        let color = pal[0];
                         let opacity = 1;
+                        let displayChar = ch;
+                        let transformX = 0;
+                        let transformY = 0;
 
-                        if (effData.name === "matrix") {
-                            if (Math.random() > 0.8 && frame % 4 === 0) {
-                                color = "#ffffff";
-                            } else {
-                                color = "#00ff66";
-                            }
-                        } else if (effData.name === "vhstape" || effData.name === "unstable") {
-                            if ((rIdx + frame) % 5 === 0 && Math.random() > 0.4) {
-                                color = Math.random() > 0.5 ? "#ff007f" : "#00f0ff";
-                            }
-                        } else if (effData.name === "laseretch" || effData.name === "sweep") {
-                            const pos = (frame * 2) % 40;
-                            if (cIdx === pos) {
-                                color = "#ffffff";
-                            } else if (cIdx > pos) {
-                                opacity = 0.15;
-                            }
+                        // UNIQUE PROCEDURAL PHYSICS PER EFFECT
+                        switch (effectName) {
+                            case "matrix":
+                                const colSeed = (cIdx * 7 + frame) % 40;
+                                if (colSeed < 15) {
+                                    displayChar = colSeed === 0 ? "█" : String.fromCharCode(0x30 + (colSeed % 10));
+                                    color = colSeed === 0 ? "#ffffff" : pal[0];
+                                } else {
+                                    color = pal[1] || pal[0];
+                                }
+                                break;
+
+                            case "binarypath":
+                                if ((cIdx + rIdx + frame) % 12 < 4) {
+                                    displayChar = Math.random() > 0.5 ? "1" : "0";
+                                    color = pal[1];
+                                } else {
+                                    color = pal[0];
+                                }
+                                break;
+
+                            case "blackhole":
+                                const distFromCenter = Math.sqrt(Math.pow(rIdx - 3, 2) + Math.pow(cIdx - 15, 2));
+                                const pulseRadius = (frame % 30);
+                                if (Math.abs(distFromCenter - pulseRadius) < 2) {
+                                    color = pal[1];
+                                    displayChar = "●";
+                                } else if (distFromCenter < pulseRadius) {
+                                    color = pal[2] || pal[0];
+                                } else {
+                                    opacity = 0.2;
+                                }
+                                break;
+
+                            case "bouncyballs":
+                                const bounceY = Math.abs(Math.sin((frame + cIdx) * 0.15) * 4);
+                                if (rIdx < 6 - bounceY) {
+                                    opacity = 0.15;
+                                } else {
+                                    color = pal[cIdx % pal.length];
+                                }
+                                break;
+
+                            case "bubbles":
+                                const bubbleY = (frame * 2 + cIdx * 3) % (numRows + 4);
+                                if (Math.abs(rIdx - (numRows - bubbleY)) < 1.5) {
+                                    displayChar = "o";
+                                    color = pal[1];
+                                } else if (rIdx > numRows - bubbleY) {
+                                    color = pal[0];
+                                } else {
+                                    opacity = 0.1;
+                                }
+                                break;
+
+                            case "burn":
+                                const burnLine = numRows - ((frame % 35) / 5);
+                                if (rIdx > burnLine + 1) {
+                                    color = pal[0];
+                                } else if (Math.abs(rIdx - burnLine) <= 1) {
+                                    color = Math.random() > 0.4 ? "#ffb703" : "#ef4444";
+                                    displayChar = Math.random() > 0.5 ? "*" : "▲";
+                                } else {
+                                    opacity = 0.1;
+                                }
+                                break;
+
+                            case "colorshift":
+                                const shiftIdx = Math.floor((rIdx + cIdx + frame) / 2) % pal.length;
+                                color = pal[shiftIdx];
+                                break;
+
+                            case "crumble":
+                                if (frame % 40 < 20) {
+                                    color = pal[0];
+                                } else {
+                                    opacity = Math.random() > 0.3 ? 0.3 : 1;
+                                    color = pal[1];
+                                }
+                                break;
+
+                            case "decrypt":
+                                const decryptCol = Math.floor((frame / 40) * numCols);
+                                if (cIdx > decryptCol) {
+                                    displayChar = String.fromCharCode(0x21 + ((cIdx + frame) % 60));
+                                    color = pal[2] || pal[0];
+                                } else {
+                                    color = pal[0];
+                                }
+                                break;
+
+                            case "laseretch":
+                                const etchRow = Math.floor((frame / 5) % numRows);
+                                if (rIdx === etchRow) {
+                                    color = "#ffffff";
+                                    displayChar = "█";
+                                } else if (rIdx < etchRow) {
+                                    color = pal[0];
+                                } else {
+                                    opacity = 0.15;
+                                }
+                                break;
+
+                            case "synthgrid":
+                                if (rIdx === 5) {
+                                    color = "#ff007f";
+                                    displayChar = "═";
+                                } else {
+                                    color = pal[(rIdx + frame) % pal.length];
+                                }
+                                break;
+
+                            case "thunderstorm":
+                                const isFlash = frame % 25 === 0;
+                                if (isFlash) {
+                                    color = "#ffffff";
+                                } else {
+                                    color = pal[0];
+                                    opacity = (rIdx + cIdx) % 3 === 0 ? 0.4 : 1;
+                                }
+                                break;
+
+                            case "vhstape":
+                            case "unstable":
+                                const glitchRow = Math.floor((frame / 3) % numRows);
+                                if (rIdx === glitchRow && Math.random() > 0.3) {
+                                    color = Math.random() > 0.5 ? "#ff007f" : "#00f0ff";
+                                } else {
+                                    color = pal[0];
+                                }
+                                break;
+
+                            case "waves":
+                                const waveOffset = Math.sin((cIdx + frame) * 0.3) * 2;
+                                color = pal[Math.abs(Math.floor(waveOffset)) % pal.length];
+                                break;
+
+                            default:
+                                const sweepPos = (frame * 2) % numCols;
+                                if (Math.abs(cIdx - sweepPos) < 2) {
+                                    color = "#ffffff";
+                                } else if (cIdx < sweepPos) {
+                                    color = pal[0];
+                                } else {
+                                    opacity = 0.2;
+                                }
+                                break;
                         }
 
-                        lineHtml += `<span style="color:${color}; opacity:${opacity};">${ch}</span>`;
+                        lineHtml += `<span style="color:${color}; opacity:${opacity};">${displayChar}</span>`;
                     }
                     html += lineHtml + "\n";
                 });
 
                 artEl.innerHTML = html;
-            }, 80);
+            }, 75);
         }
 
         function copyCode(text) {
             navigator.clipboard.writeText(text);
             alert("CLI Command copied to clipboard!");
         }
+
+        // Initialize Palettes & Grid
+        initPalettes();
+        buildGrid();
     </script>
 </body>
 </html>
