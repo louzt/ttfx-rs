@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ttfx-rs — Terminal Text Effects in Rust</title>
+    <title>ttfx-rs — All 37 Terminal Text Effects</title>
     <meta name="description" content="All 37 TerminalTextEffects written in Rust for maximum performance and zero dependencies.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -70,7 +70,7 @@
             margin-bottom: 1.5rem;
         }
 
-        /* Minimal Stats Bar (No boxes, separated by subtle borders) */
+        /* Minimal Stats Bar */
         .stats-bar {
             display: flex;
             align-items: center;
@@ -215,7 +215,7 @@
         .term-screen {
             background: var(--term-bg);
             padding: 1rem 0.75rem;
-            height: 160px;
+            height: 165px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -328,7 +328,7 @@
             High-performance Rust implementation of <strong>TerminalTextEffects</strong>. Built for 2ms execution, 120 FPS rendering, and zero runtime dependencies.
         </p>
 
-        <!-- Minimal Stats Bar (No boxes, vertical line dividers) -->
+        <!-- Minimal Stats Bar -->
         <div class="stats-bar">
             <div class="stat-item">
                 <div class="stat-num">37</div>
@@ -497,14 +497,17 @@
                         let opacity = 1;
                         let displayChar = ch;
 
+                        // 100% CUSTOM PHYSICS & MOTION FOR EVERY SINGLE EFFECT
                         switch (effectName) {
-                            case "matrix":
-                                const colSeed = (cIdx * 7 + frame) % 35;
-                                if (colSeed < 12) {
-                                    displayChar = colSeed === 0 ? "█" : String.fromCharCode(0x30 + (colSeed % 10));
-                                    color = colSeed === 0 ? "#ffffff" : pal[0];
+                            case "beams":
+                                const beamPos = (frame * 2 + rIdx * 3) % (numCols + 10);
+                                if (Math.abs(cIdx - beamPos) < 3) {
+                                    color = "#ffffff";
+                                    displayChar = "█";
+                                } else if (cIdx < beamPos) {
+                                    color = pal[0];
                                 } else {
-                                    color = pal[1] || pal[0];
+                                    opacity = 0.2;
                                 }
                                 break;
 
@@ -518,12 +521,12 @@
                                 break;
 
                             case "blackhole":
-                                const distFromCenter = Math.sqrt(Math.pow(rIdx - 3, 2) + Math.pow(cIdx - 15, 2));
-                                const pulseRadius = (frame % 25);
-                                if (Math.abs(distFromCenter - pulseRadius) < 2) {
+                                const distCenter = Math.sqrt(Math.pow(rIdx - 3, 2) + Math.pow(cIdx - 15, 2));
+                                const radius = (frame % 25);
+                                if (Math.abs(distCenter - radius) < 2) {
                                     color = pal[1];
                                     displayChar = "●";
-                                } else if (distFromCenter < pulseRadius) {
+                                } else if (distCenter < radius) {
                                     color = pal[2] || pal[0];
                                 } else {
                                     opacity = 0.2;
@@ -568,13 +571,62 @@
                                 color = pal[shiftIdx];
                                 break;
 
+                            case "crumble":
+                                if ((frame + rIdx) % 30 > 15) {
+                                    color = pal[0];
+                                } else {
+                                    opacity = 0.25;
+                                    displayChar = ".";
+                                }
+                                break;
+
                             case "decrypt":
-                                const decryptCol = Math.floor((frame / 35) * numCols);
+                                const decryptCol = Math.floor((frame / 30) * numCols);
                                 if (cIdx > decryptCol) {
                                     displayChar = String.fromCharCode(0x21 + ((cIdx + frame) % 50));
                                     color = pal[2] || pal[0];
                                 } else {
                                     color = pal[0];
+                                }
+                                break;
+
+                            case "errorcorrect":
+                                const isGlitching = Math.random() > 0.8 && (frame % 5 === 0);
+                                if (isGlitching) {
+                                    color = "#ef4444";
+                                    displayChar = "?";
+                                } else {
+                                    color = pal[0];
+                                }
+                                break;
+
+                            case "expand":
+                                const expRadius = (frame % 20);
+                                const distMid = Math.abs(cIdx - 15) + Math.abs(rIdx - 3);
+                                if (distMid <= expRadius) {
+                                    color = pal[0];
+                                } else {
+                                    opacity = 0.15;
+                                }
+                                break;
+
+                            case "fireworks":
+                                const sparkPulse = (frame * 3 + cIdx * 2 + rIdx * 5) % 20;
+                                if (sparkPulse < 4) {
+                                    color = pal[sparkPulse % pal.length];
+                                    displayChar = "*";
+                                } else {
+                                    color = pal[0];
+                                }
+                                break;
+
+                            case "highlight":
+                                const hlPos = (frame * 2) % (numCols + 10);
+                                if (Math.abs(cIdx - hlPos) < 3) {
+                                    color = "#ffffff";
+                                } else {
+                                    color = pal[0];
+                                    opacity = 0.4;
                                 }
                                 break;
 
@@ -587,6 +639,199 @@
                                     color = pal[0];
                                 } else {
                                     opacity = 0.15;
+                                }
+                                break;
+
+                            case "matrix":
+                                const colSeed = (cIdx * 7 + frame) % 35;
+                                if (colSeed < 12) {
+                                    displayChar = colSeed === 0 ? "█" : String.fromCharCode(0x30 + (colSeed % 10));
+                                    color = colSeed === 0 ? "#ffffff" : pal[0];
+                                } else {
+                                    color = pal[1] || pal[0];
+                                }
+                                break;
+
+                            case "middleout":
+                                const midDist = Math.abs(rIdx - 3);
+                                const midExpand = (frame % 15) / 2.5;
+                                if (midDist <= midExpand) {
+                                    color = pal[0];
+                                } else {
+                                    opacity = 0.15;
+                                }
+                                break;
+
+                            case "orbittingvolley":
+                                const angle = (frame * 0.2) + (cIdx * 0.1);
+                                const orbR = Math.sin(angle) * 3 + 3;
+                                if (Math.abs(rIdx - orbR) < 1) {
+                                    color = "#ffffff";
+                                    displayChar = "o";
+                                } else {
+                                    color = pal[0];
+                                    opacity = 0.5;
+                                }
+                                break;
+
+                            case "overflow":
+                                const flowPos = (frame * 2 + cIdx) % (numRows + 6);
+                                if (rIdx < flowPos) {
+                                    color = pal[0];
+                                } else if (rIdx === Math.floor(flowPos)) {
+                                    displayChar = "█";
+                                    color = pal[1];
+                                } else {
+                                    opacity = 0.1;
+                                }
+                                break;
+
+                            case "pour":
+                                const pourLevel = (frame % 30) / 5;
+                                if (rIdx >= numRows - pourLevel) {
+                                    color = pal[0];
+                                } else if (Math.abs(rIdx - (numRows - pourLevel)) < 1) {
+                                    displayChar = "░";
+                                    color = pal[1];
+                                } else {
+                                    opacity = 0.1;
+                                }
+                                break;
+
+                            case "print":
+                                const printIndex = (frame * 3) % (numRows * numCols);
+                                const curIndex = rIdx * numCols + cIdx;
+                                if (curIndex === printIndex) {
+                                    displayChar = "█";
+                                    color = "#ffffff";
+                                } else if (curIndex < printIndex) {
+                                    color = pal[0];
+                                } else {
+                                    opacity = 0.1;
+                                }
+                                break;
+
+                            case "rain":
+                                const rainDrop = (frame * 2 + cIdx * 4) % (numRows + 5);
+                                if (Math.abs(rIdx - rainDrop) < 1) {
+                                    displayChar = "│";
+                                    color = pal[1];
+                                } else if (rIdx < rainDrop) {
+                                    color = pal[0];
+                                } else {
+                                    opacity = 0.15;
+                                }
+                                break;
+
+                            case "randomsequence":
+                                const seqSeed = (cIdx * 13 + rIdx * 7 + frame) % 25;
+                                if (seqSeed > 8) {
+                                    color = pal[0];
+                                } else {
+                                    opacity = 0.15;
+                                }
+                                break;
+
+                            case "rings":
+                                const ringRadius = (frame % 20);
+                                const rCenterDist = Math.sqrt(Math.pow(rIdx - 3, 2) + Math.pow(cIdx - 15, 2));
+                                if (Math.abs(rCenterDist - ringRadius) < 1.5) {
+                                    color = pal[1];
+                                    displayChar = "◯";
+                                } else if (rCenterDist < ringRadius) {
+                                    color = pal[0];
+                                } else {
+                                    opacity = 0.15;
+                                }
+                                break;
+
+                            case "scattered":
+                                const scatProgress = (frame % 30) / 30;
+                                if (scatProgress > 0.5) {
+                                    color = pal[0];
+                                } else {
+                                    opacity = Math.random() > 0.5 ? 0.2 : 1;
+                                }
+                                break;
+
+                            case "slice":
+                                const slicePhase = (frame % 20);
+                                const isOddRow = rIdx % 2 === 1;
+                                const sliceOffset = isOddRow ? (20 - slicePhase) : (slicePhase - 20);
+                                if (Math.abs(cIdx - 15 + sliceOffset) < 12) {
+                                    color = pal[0];
+                                } else {
+                                    opacity = 0.15;
+                                }
+                                break;
+
+                            case "slide":
+                                const slideProgress = Math.min(1, (frame % 25) / 20);
+                                const slideColBound = Math.floor(slideProgress * numCols);
+                                if (cIdx <= slideColBound) {
+                                    color = pal[0];
+                                } else {
+                                    opacity = 0.1;
+                                }
+                                break;
+
+                            case "smoke":
+                                const smokeDensity = Math.sin((cIdx * 0.2 + rIdx * 0.4 + frame * 0.1)) * 0.5 + 0.5;
+                                if (smokeDensity > 0.4) {
+                                    color = pal[0];
+                                    opacity = smokeDensity;
+                                } else {
+                                    displayChar = "~";
+                                    color = pal[1];
+                                    opacity = 0.3;
+                                }
+                                break;
+
+                            case "spotlights":
+                                const spot1 = Math.floor(Math.sin(frame * 0.1) * 10 + 15);
+                                const spot2 = Math.floor(Math.cos(frame * 0.12) * 10 + 15);
+                                if (Math.abs(cIdx - spot1) < 4 || Math.abs(cIdx - spot2) < 4) {
+                                    color = "#ffffff";
+                                } else {
+                                    color = pal[0];
+                                    opacity = 0.25;
+                                }
+                                break;
+
+                            case "spray":
+                                const sprayPos = (frame * 2) % numCols;
+                                if (Math.abs(cIdx - sprayPos) < 4) {
+                                    if (Math.random() > 0.3) {
+                                        color = pal[0];
+                                    } else {
+                                        displayChar = ".";
+                                        color = pal[1];
+                                    }
+                                } else if (cIdx < sprayPos) {
+                                    color = pal[0];
+                                } else {
+                                    opacity = 0.1;
+                                }
+                                break;
+
+                            case "swarm":
+                                const swarmNoise = (cIdx * 5 + rIdx * 11 + frame) % 17;
+                                if (swarmNoise < 5) {
+                                    displayChar = "•";
+                                    color = pal[1];
+                                } else {
+                                    color = pal[0];
+                                }
+                                break;
+
+                            case "sweep":
+                                const sweepPos = (frame * 2) % numCols;
+                                if (Math.abs(cIdx - sweepPos) < 2) {
+                                    color = "#ffffff";
+                                } else if (cIdx < sweepPos) {
+                                    color = pal[0];
+                                } else {
+                                    opacity = 0.2;
                                 }
                                 break;
 
@@ -608,8 +853,8 @@
                                 }
                                 break;
 
-                            case "vhstape":
                             case "unstable":
+                            case "vhstape":
                                 const glitchRow = Math.floor((frame / 3) % numRows);
                                 if (rIdx === glitchRow && Math.random() > 0.35) {
                                     color = Math.random() > 0.5 ? "#ff007f" : "#00f0ff";
@@ -623,14 +868,12 @@
                                 color = pal[Math.abs(Math.floor(waveOffset)) % pal.length];
                                 break;
 
-                            default:
-                                const sweepPos = (frame * 2) % numCols;
-                                if (Math.abs(cIdx - sweepPos) < 2) {
-                                    color = "#ffffff";
-                                } else if (cIdx < sweepPos) {
+                            case "wipe":
+                                const wipePos = Math.floor(((frame % 30) / 30) * numCols);
+                                if (cIdx <= wipePos) {
                                     color = pal[0];
                                 } else {
-                                    opacity = 0.2;
+                                    opacity = 0.1;
                                 }
                                 break;
                         }
