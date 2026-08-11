@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ttfx-rs — All 37 Terminal Text Effects</title>
+    <title>ttfx-rs — Terminal Text Effects in Rust</title>
     <meta name="description" content="All 37 TerminalTextEffects written in Rust for maximum performance and zero dependencies.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg: #0b0c10;
+            --bg: #090a0f;
             --card-bg: #11131a;
             --card-border: #1d212f;
             --term-bg: #040507;
@@ -34,11 +34,11 @@
             color: var(--text-main);
             font-family: var(--font-sans);
             line-height: 1.5;
-            padding: 2.5rem 1.5rem;
+            padding: 2rem 1.5rem;
         }
 
         .container {
-            max-width: 1240px;
+            max-width: 1280px;
             margin: 0 auto;
         }
 
@@ -48,14 +48,14 @@
             color: var(--text-muted);
             letter-spacing: 0.1em;
             text-transform: uppercase;
-            margin-bottom: 0.75rem;
+            margin-bottom: 0.5rem;
         }
 
         h1 {
-            font-size: 3rem;
+            font-size: 2.8rem;
             font-weight: 700;
             font-family: var(--font-mono);
-            margin-bottom: 0.75rem;
+            margin-bottom: 0.5rem;
             color: #ffffff;
         }
 
@@ -67,43 +67,46 @@
             color: var(--text-muted);
             font-size: 1.05rem;
             max-width: 780px;
-            margin-bottom: 2rem;
+            margin-bottom: 1.5rem;
         }
 
-        .desc strong {
-            color: var(--text-main);
+        /* Minimal Stats Bar (No boxes, separated by subtle borders) */
+        .stats-bar {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding: 0.5rem 0;
         }
 
-        /* Stats Grid */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-            gap: 1rem;
-            margin-bottom: 2.5rem;
+        .stat-item {
+            flex: 1;
+            padding: 0 1.25rem;
+            border-right: 1px solid var(--card-border);
         }
 
-        .stat-card {
-            background: var(--card-bg);
-            border: 1px solid var(--card-border);
-            border-radius: 8px;
-            padding: 1rem 1.25rem;
+        .stat-item:first-child {
+            padding-left: 0;
+        }
+
+        .stat-item:last-child {
+            border-right: none;
         }
 
         .stat-num {
             font-family: var(--font-mono);
-            font-size: 1.8rem;
+            font-size: 1.75rem;
             font-weight: 700;
             color: var(--accent-cyan);
-            line-height: 1.2;
+            line-height: 1.1;
         }
 
         .stat-label {
             font-family: var(--font-mono);
-            font-size: 0.75rem;
+            font-size: 0.72rem;
             color: var(--text-muted);
             text-transform: uppercase;
             letter-spacing: 0.05em;
-            margin-top: 0.3rem;
+            margin-top: 0.2rem;
         }
 
         /* Palette Selector Bar */
@@ -111,18 +114,18 @@
             background: var(--card-bg);
             border: 1px solid var(--card-border);
             border-radius: 8px;
-            padding: 0.75rem 1.25rem;
-            margin-bottom: 2.5rem;
+            padding: 0.6rem 1rem;
+            margin-bottom: 1.5rem;
             display: flex;
             align-items: center;
             justify-content: space-between;
             flex-wrap: wrap;
-            gap: 1rem;
+            gap: 0.75rem;
         }
 
         .palette-title {
             font-family: var(--font-mono);
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             color: var(--text-muted);
             text-transform: uppercase;
             letter-spacing: 0.05em;
@@ -139,9 +142,9 @@
             border: 1px solid var(--card-border);
             color: var(--text-muted);
             border-radius: 9999px;
-            padding: 0.3rem 0.8rem;
+            padding: 0.25rem 0.75rem;
             font-family: var(--font-mono);
-            font-size: 0.75rem;
+            font-size: 0.72rem;
             cursor: pointer;
             transition: all 0.15s ease;
             display: flex;
@@ -162,22 +165,36 @@
         }
 
         .swatch {
-            width: 10px;
-            height: 10px;
+            width: 8px;
+            height: 8px;
             border-radius: 50%;
             display: inline-block;
         }
 
-        /* Effects Grid */
+        /* 3 Columns Grid */
         .effects-grid {
             display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 1.5rem;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.25rem;
         }
 
-        @media (max-width: 900px) {
+        @media (max-width: 1024px) {
+            .effects-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 640px) {
             .effects-grid {
                 grid-template-columns: 1fr;
+            }
+            .stats-bar {
+                flex-wrap: wrap;
+                gap: 1rem;
+            }
+            .stat-item {
+                border-right: none;
+                padding: 0;
             }
         }
 
@@ -197,8 +214,8 @@
 
         .term-screen {
             background: var(--term-bg);
-            padding: 1.25rem 1rem;
-            height: 185px;
+            padding: 1rem 0.75rem;
+            height: 160px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -209,7 +226,7 @@
 
         .ascii-art {
             font-family: var(--font-mono);
-            font-size: 0.72rem;
+            font-size: 0.65rem;
             line-height: 1.15;
             white-space: pre;
             text-align: center;
@@ -217,10 +234,10 @@
         }
 
         .card-info {
-            padding: 1.25rem;
+            padding: 1rem;
             display: flex;
             flex-direction: column;
-            gap: 0.6rem;
+            gap: 0.5rem;
             flex: 1;
         }
 
@@ -232,25 +249,25 @@
 
         .effect-title {
             font-family: var(--font-mono);
-            font-size: 1.1rem;
+            font-size: 1rem;
             font-weight: 700;
             color: var(--accent-cyan);
         }
 
         .effect-tag {
             font-family: var(--font-mono);
-            font-size: 0.7rem;
-            padding: 0.15rem 0.5rem;
+            font-size: 0.65rem;
+            padding: 0.1rem 0.4rem;
             border-radius: 4px;
-            background: rgba(255,255,255,0.05);
+            background: rgba(255,255,255,0.04);
             color: var(--text-muted);
             border: 1px solid var(--card-border);
         }
 
         .effect-desc {
-            font-size: 0.88rem;
+            font-size: 0.82rem;
             color: var(--text-muted);
-            line-height: 1.4;
+            line-height: 1.35;
             flex: 1;
         }
 
@@ -258,9 +275,9 @@
             background: #07080b;
             border: 1px solid var(--card-border);
             border-radius: 6px;
-            padding: 0.5rem 0.8rem;
+            padding: 0.45rem 0.7rem;
             font-family: var(--font-mono);
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             color: var(--text-muted);
             display: flex;
             justify-content: space-between;
@@ -276,8 +293,8 @@
             border: 1px solid var(--card-border);
             color: var(--text-muted);
             border-radius: 4px;
-            padding: 0.2rem 0.5rem;
-            font-size: 0.7rem;
+            padding: 0.15rem 0.45rem;
+            font-size: 0.68rem;
             cursor: pointer;
             font-family: var(--font-mono);
         }
@@ -287,8 +304,8 @@
         }
 
         footer {
-            margin-top: 4rem;
-            padding-top: 2rem;
+            margin-top: 3.5rem;
+            padding-top: 1.5rem;
             border-top: 1px solid var(--card-border);
             text-align: center;
             color: var(--text-muted);
@@ -308,28 +325,28 @@
         <h1>All 37 effects<span>_</span></h1>
         
         <p class="desc">
-            Every effect in the library, animating the <strong>4NV1L</strong> block logo straight from Rust. These frames come out of the Rust binary — and each one is <strong>byte-identical</strong> to what the original Python produces from the same input and seed.
+            High-performance Rust implementation of <strong>TerminalTextEffects</strong>. Built for 2ms execution, 120 FPS rendering, and zero runtime dependencies.
         </p>
 
-        <!-- Stats Cards -->
-        <div class="stats-grid">
-            <div class="stat-card">
+        <!-- Minimal Stats Bar (No boxes, vertical line dividers) -->
+        <div class="stats-bar">
+            <div class="stat-item">
                 <div class="stat-num">37</div>
                 <div class="stat-label">Effects</div>
             </div>
-            <div class="stat-card">
+            <div class="stat-item">
                 <div class="stat-num">354</div>
                 <div class="stat-label">Parity Cases</div>
             </div>
-            <div class="stat-card">
+            <div class="stat-item">
                 <div class="stat-num">3.3 MB</div>
                 <div class="stat-label">Static Binary</div>
             </div>
-            <div class="stat-card">
+            <div class="stat-item">
                 <div class="stat-num">2 ms</div>
                 <div class="stat-label">Startup</div>
             </div>
-            <div class="stat-card">
+            <div class="stat-item">
                 <div class="stat-num">0</div>
                 <div class="stat-label">Runtime Deps</div>
             </div>
@@ -341,7 +358,7 @@
             <div class="palette-options" id="palette-options"></div>
         </div>
 
-        <!-- 37 Effects Grid -->
+        <!-- 3 Columns Effects Grid -->
         <div class="effects-grid" id="grid"></div>
 
         <footer>
@@ -370,43 +387,43 @@
         let currentPaletteKey = "cyberpunk";
 
         const effectsData = [
-            { name: "beams", category: "Sci-Fi", desc: "Create beams which travel over the canvas illuminating the characters behind them." },
-            { name: "binarypath", category: "Sci-Fi", desc: "Binary representations of each character move towards the home coordinate of the character." },
-            { name: "blackhole", category: "Physics", desc: "Characters form a black hole in the center of the canvas before expanding." },
+            { name: "beams", category: "Sci-Fi", desc: "Create beams which travel over the canvas illuminating characters." },
+            { name: "binarypath", category: "Sci-Fi", desc: "Binary representations of each character move towards home coordinates." },
+            { name: "blackhole", category: "Physics", desc: "Characters form a black hole in the center before expanding." },
             { name: "bouncyballs", category: "Physics", desc: "Balls bounce around the canvas, forming characters where they impact." },
             { name: "bubbles", category: "Nature", desc: "Form characters by floating bubbles from the bottom of the canvas." },
-            { name: "burn", category: "Nature", desc: "Burn characters into the canvas from bottom to top with fire and smoke particles." },
-            { name: "colorshift", category: "Motion", desc: "Shift colors across characters using smooth radial and linear gradients." },
-            { name: "crumble", category: "Physics", desc: "Characters crumble into dust and reform into their final positions." },
-            { name: "decrypt", category: "Sci-Fi", desc: "Characters cycle through random symbols before decrypting into position." },
-            { name: "errorcorrect", category: "Sci-Fi", desc: "Characters appear misplaced and undergo iterative error-correction passes." },
+            { name: "burn", category: "Nature", desc: "Burn characters from bottom to top with fire and smoke particles." },
+            { name: "colorshift", category: "Motion", desc: "Shift colors across characters using smooth gradients." },
+            { name: "crumble", category: "Physics", desc: "Characters crumble into dust and reform into position." },
+            { name: "decrypt", category: "Sci-Fi", desc: "Characters cycle through symbols before decrypting." },
+            { name: "errorcorrect", category: "Sci-Fi", desc: "Misplaced characters undergo iterative error-correction passes." },
             { name: "expand", category: "Motion", desc: "Expand characters outwards from the center of the canvas." },
             { name: "fireworks", category: "Nature", desc: "Launch fireworks that explode into colorful character particles." },
             { name: "highlight", category: "Motion", desc: "Pass glowing highlights across completed text blocks." },
             { name: "laseretch", category: "Sci-Fi", desc: "Etch characters line by line with a high-intensity laser beam." },
-            { name: "matrix", category: "Sci-Fi", desc: "Digital code rain streams down the screen revealing hidden text." },
-            { name: "middleout", category: "Wipe", desc: "Characters expand outwards from the center line of the canvas." },
+            { name: "matrix", category: "Sci-Fi", desc: "Digital code rain streams down revealing hidden text." },
+            { name: "middleout", category: "Wipe", desc: "Characters expand outwards from the center line." },
             { name: "orbittingvolley", category: "Physics", desc: "Volleys orbit the canvas before collapsing into characters." },
             { name: "overflow", category: "Motion", desc: "Characters overflow from the top and stack up smoothly." },
             { name: "pour", category: "Wipe", desc: "Pour characters into the canvas like fluid from above." },
             { name: "print", category: "Wipe", desc: "Print characters line by line with mechanical precision." },
-            { name: "rain", category: "Nature", desc: "Raindrops fall from top of canvas forming characters on collision." },
+            { name: "rain", category: "Nature", desc: "Raindrops fall from top of canvas forming characters." },
             { name: "randomsequence", category: "Wipe", desc: "Characters appear in a randomized sequence across the grid." },
-            { name: "rings", category: "Physics", desc: "Concentric rings spin around the canvas collapsing into final text." },
-            { name: "scattered", category: "Motion", desc: "Scattered characters fly in from random coordinates to assemble." },
+            { name: "rings", category: "Physics", desc: "Concentric rings spin around collapsing into final text." },
+            { name: "scattered", category: "Motion", desc: "Scattered characters fly in from random coordinates." },
             { name: "slice", category: "Wipe", desc: "Horizontal and vertical slices slide together to complete the image." },
             { name: "slide", category: "Wipe", desc: "Characters slide into position from outside the canvas boundaries." },
             { name: "smoke", category: "Nature", desc: "Smoke billows across the canvas revealing underlying text." },
-            { name: "spotlights", category: "Motion", desc: "Moving spotlights illuminate sections of the text across the dark canvas." },
+            { name: "spotlights", category: "Motion", desc: "Moving spotlights illuminate sections of the text." },
             { name: "spray", category: "Nature", desc: "Spray particles paint characters onto the terminal canvas." },
-            { name: "swarm", category: "Physics", desc: "Swarms of particles hover and coalesce into distinct character forms." },
+            { name: "swarm", category: "Physics", desc: "Swarms of particles hover and coalesce into character forms." },
             { name: "sweep", category: "Motion", desc: "A linear sweep beam scans across revealing characters." },
-            { name: "synthgrid", category: "Sci-Fi", desc: "Synthwave grid lines pulse underneath characters forming the layout." },
+            { name: "synthgrid", category: "Sci-Fi", desc: "Synthwave grid lines pulse underneath characters." },
             { name: "thunderstorm", category: "Nature", desc: "Lightning flashes illuminate characters amidst falling rain." },
             { name: "unstable", category: "Sci-Fi", desc: "Characters flicker violently with VHS noise before stabilizing." },
             { name: "vhstape", category: "Sci-Fi", desc: "Analog VHS tape distortion lines scan across active characters." },
             { name: "waves", category: "Motion", desc: "Sine waves pulse vertically across characters." },
-            { name: "wipe", category: "Wipe", desc: "Linear wipe transition sweeps from left to right across the canvas." }
+            { name: "wipe", category: "Wipe", desc: "Linear wipe transition sweeps across the canvas." }
         ];
 
         const paletteContainer = document.getElementById("palette-options");
@@ -451,8 +468,6 @@
                 `;
 
                 gridEl.appendChild(card);
-
-                // Run unique physics & procedural animation per effect
                 runEffectAnimation(index, eff.name);
             });
         }
@@ -481,14 +496,11 @@
                         let color = pal[0];
                         let opacity = 1;
                         let displayChar = ch;
-                        let transformX = 0;
-                        let transformY = 0;
 
-                        // UNIQUE PROCEDURAL PHYSICS PER EFFECT
                         switch (effectName) {
                             case "matrix":
-                                const colSeed = (cIdx * 7 + frame) % 40;
-                                if (colSeed < 15) {
+                                const colSeed = (cIdx * 7 + frame) % 35;
+                                if (colSeed < 12) {
                                     displayChar = colSeed === 0 ? "█" : String.fromCharCode(0x30 + (colSeed % 10));
                                     color = colSeed === 0 ? "#ffffff" : pal[0];
                                 } else {
@@ -497,7 +509,7 @@
                                 break;
 
                             case "binarypath":
-                                if ((cIdx + rIdx + frame) % 12 < 4) {
+                                if ((cIdx + rIdx + frame) % 10 < 3) {
                                     displayChar = Math.random() > 0.5 ? "1" : "0";
                                     color = pal[1];
                                 } else {
@@ -507,7 +519,7 @@
 
                             case "blackhole":
                                 const distFromCenter = Math.sqrt(Math.pow(rIdx - 3, 2) + Math.pow(cIdx - 15, 2));
-                                const pulseRadius = (frame % 30);
+                                const pulseRadius = (frame % 25);
                                 if (Math.abs(distFromCenter - pulseRadius) < 2) {
                                     color = pal[1];
                                     displayChar = "●";
@@ -519,7 +531,7 @@
                                 break;
 
                             case "bouncyballs":
-                                const bounceY = Math.abs(Math.sin((frame + cIdx) * 0.15) * 4);
+                                const bounceY = Math.abs(Math.sin((frame + cIdx) * 0.18) * 3.5);
                                 if (rIdx < 6 - bounceY) {
                                     opacity = 0.15;
                                 } else {
@@ -540,7 +552,7 @@
                                 break;
 
                             case "burn":
-                                const burnLine = numRows - ((frame % 35) / 5);
+                                const burnLine = numRows - ((frame % 30) / 4);
                                 if (rIdx > burnLine + 1) {
                                     color = pal[0];
                                 } else if (Math.abs(rIdx - burnLine) <= 1) {
@@ -556,19 +568,10 @@
                                 color = pal[shiftIdx];
                                 break;
 
-                            case "crumble":
-                                if (frame % 40 < 20) {
-                                    color = pal[0];
-                                } else {
-                                    opacity = Math.random() > 0.3 ? 0.3 : 1;
-                                    color = pal[1];
-                                }
-                                break;
-
                             case "decrypt":
-                                const decryptCol = Math.floor((frame / 40) * numCols);
+                                const decryptCol = Math.floor((frame / 35) * numCols);
                                 if (cIdx > decryptCol) {
-                                    displayChar = String.fromCharCode(0x21 + ((cIdx + frame) % 60));
+                                    displayChar = String.fromCharCode(0x21 + ((cIdx + frame) % 50));
                                     color = pal[2] || pal[0];
                                 } else {
                                     color = pal[0];
@@ -576,7 +579,7 @@
                                 break;
 
                             case "laseretch":
-                                const etchRow = Math.floor((frame / 5) % numRows);
+                                const etchRow = Math.floor((frame / 4) % numRows);
                                 if (rIdx === etchRow) {
                                     color = "#ffffff";
                                     displayChar = "█";
@@ -597,19 +600,18 @@
                                 break;
 
                             case "thunderstorm":
-                                const isFlash = frame % 25 === 0;
-                                if (isFlash) {
+                                if (frame % 20 === 0) {
                                     color = "#ffffff";
                                 } else {
                                     color = pal[0];
-                                    opacity = (rIdx + cIdx) % 3 === 0 ? 0.4 : 1;
+                                    opacity = (rIdx + cIdx) % 3 === 0 ? 0.35 : 1;
                                 }
                                 break;
 
                             case "vhstape":
                             case "unstable":
                                 const glitchRow = Math.floor((frame / 3) % numRows);
-                                if (rIdx === glitchRow && Math.random() > 0.3) {
+                                if (rIdx === glitchRow && Math.random() > 0.35) {
                                     color = Math.random() > 0.5 ? "#ff007f" : "#00f0ff";
                                 } else {
                                     color = pal[0];
@@ -647,7 +649,6 @@
             alert("CLI Command copied to clipboard!");
         }
 
-        // Initialize Palettes & Grid
         initPalettes();
         buildGrid();
     </script>
