@@ -142,8 +142,8 @@
             margin-top: 0.2rem;
         }
 
-        /* Controls & Palette Selector Bar */
-        .controls-bar {
+        /* Palette Selector Bar */
+        .palette-bar {
             background: var(--card-bg);
             border: 1px solid var(--card-border);
             border-radius: 8px;
@@ -156,34 +156,12 @@
             gap: 1rem;
         }
 
-        .text-input-group {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .text-input-group label {
+        .palette-title {
             font-family: var(--font-mono);
             font-size: 0.8rem;
             color: var(--text-muted);
             text-transform: uppercase;
             letter-spacing: 0.05em;
-        }
-
-        .text-input-group input {
-            background: #06070a;
-            border: 1px solid var(--card-border);
-            color: var(--accent-cyan);
-            border-radius: 6px;
-            padding: 0.35rem 0.75rem;
-            font-family: var(--font-mono);
-            font-size: 0.85rem;
-            width: 180px;
-        }
-
-        .text-input-group input:focus {
-            outline: none;
-            border-color: var(--accent-cyan);
         }
 
         .palette-options {
@@ -250,10 +228,6 @@
             .stat-item {
                 border-right: none;
                 padding: 0;
-            }
-            .controls-bar {
-                flex-direction: column;
-                align-items: stretch;
             }
         }
 
@@ -403,13 +377,13 @@
             </a>
         </div>
 
-        <h1 id="main-title">All effects<span>_</span></h1>
+        <h1 id="main-title">All 38 effects<span>_</span></h1>
         
         <p class="desc">
             High-performance Rust implementation of <strong>TerminalTextEffects</strong>. Built for 2ms execution, 120 FPS rendering, and zero runtime dependencies.
         </p>
 
-        <!-- Minimal Stats Bar (Auto-detected values) -->
+        <!-- Minimal Stats Bar -->
         <div class="stats-bar">
             <div class="stat-item">
                 <div class="stat-num" id="stat-effects">38</div>
@@ -433,17 +407,13 @@
             </div>
         </div>
 
-        <!-- Interactive Controls Bar -->
-        <div class="controls-bar">
-            <div class="text-input-group">
-                <label for="custom-input">Banner Text:</label>
-                <input type="text" id="custom-input" value="LOUZT" placeholder="Type banner text...">
-            </div>
-
+        <!-- Palette Selector Bar -->
+        <div class="palette-bar">
+            <div class="palette-title">Global Color Theme</div>
             <div class="palette-options" id="palette-options"></div>
         </div>
 
-        <!-- 3 Columns Effects Grid -->
+        <!-- 3 Columns Grid -->
         <div class="effects-grid" id="grid"></div>
 
         <footer>
@@ -452,32 +422,14 @@
     </div>
 
     <script>
-        const blockFonts = {
-            "LOUZT": `
+        const asciiLogo = `
   ██╗      ██████╗ ██╗  ██╗███████╗████████╗
   ██║     ██╔═══██╗██║  ██║╚══███╔╝╚══██╔══╝
   ██║     ██║   ██║██║  ██║  ███╔╝    ██║   
   ██║     ██║   ██║██║  ██║ ███╔╝     ██║   
   ███████╗╚██████╔╝╚█████╔╝███████╗   ██║   
   ╚══════╝ ╚═════╝  ╚════╝ ╚══════╝   ╚═╝   
-`.trim(),
-            "4NV1L": `
-  ██████╗ ███╗   ██╗██╗   ██╗██╗██╗
- ██╔════╝ ████╗  ██║██║   ██║██║██║
- █████╗   ██╔██╗ ██║██║   ██║██║██║
- ██╔══╝   ██║╚██╗██║╚██╗ ██╔╝██║██║
- ███████╗ ██║ ╚████║ ╚████╔╝ ██║███████╗
- ╚══════╝ ╚═╝  ╚═══╝  ╚═══╝  ╚═╝╚══════╝
-`.trim(),
-            "H3PH3ST": `
- ██╗  ██╗██████╗ ██████╗ ██╗  ██╗██████╗ ███████╗████████╗
- ██║  ██║██╔══██╗██╔══██╗██║  ██║██╔══██╗██╔════╝╚══██╔══╝
- ███████║██████╔╝██████╔╝███████║██████╔╝███████╗   ██║   
- ██╔══██║██╔═══╝ ██╔═══╝ ██╔══██║██╔═══╝ ╚════██║   ██║   
- ██║  ██║██║     ██║     ██║  ██║██║     ███████║   ██║   
- ╚═╝  ╚═╝╚═╝     ╚═╝     ╚═╝  ╚═╝╚═╝     ╚══════╝   ╚═╝   
-`.trim()
-        };
+`.trim();
 
         const palettes = {
             cyberpunk: { name: "Cyberpunk Neon", colors: ["#00f0ff", "#ff007f", "#9d4edd", "#ffffff"] },
@@ -531,16 +483,8 @@
             { name: "wormhole", category: "Physics", desc: "Spiraling gravitational vortex drawing text into a central singularity." }
         ];
 
-        const customInput = document.getElementById("custom-input");
-        const mainTitle = document.getElementById("main-title");
-        const statEffects = document.getElementById("stat-effects");
         const paletteContainer = document.getElementById("palette-options");
         const gridEl = document.getElementById("grid");
-
-        // Auto-detect count
-        const totalEffects = effectsData.length;
-        mainTitle.innerHTML = `All ${totalEffects} effects<span>_</span>`;
-        statEffects.textContent = totalEffects;
 
         function initPalettes() {
             paletteContainer.innerHTML = "";
@@ -557,22 +501,8 @@
             });
         }
 
-        function getActiveAsciiLogo() {
-            const rawText = (customInput.value || "LOUZT").trim().toUpperCase();
-            if (blockFonts[rawText]) {
-                return blockFonts[rawText];
-            }
-            const border = "█".repeat(Math.max(16, rawText.length + 6));
-            return `
- ╔${border}╗
- ║   ${rawText}   ║
- ╚${border}╝
-`.trim();
-        }
-
         function buildGrid() {
             gridEl.innerHTML = "";
-            const currentBanner = (customInput.value || "LOUZT").trim().toUpperCase();
 
             effectsData.forEach((eff, index) => {
                 const card = document.createElement("div");
@@ -589,9 +519,9 @@
                         </div>
                         <div class="effect-desc">${eff.desc}</div>
                         <div class="code-box">
-                            <code>$ echo "${currentBanner}" | ttfx ${eff.name}</code>
+                            <code>$ echo "LOUZT" | ttfx ${eff.name}</code>
                             <div class="actions-group">
-                                <button class="copy-btn" onclick="copyCode('echo \"${currentBanner}\" | ttfx ${eff.name}')">Copy</button>
+                                <button class="copy-btn" onclick="copyCode('echo \"LOUZT\" | ttfx ${eff.name}')">Copy</button>
                                 <a class="src-btn" href="https://github.com/louzt/ttfx-rs/blob/main/src/effects/${eff.name}.rs" target="_blank">Code ↗</a>
                             </div>
                         </div>
@@ -603,27 +533,19 @@
             });
         }
 
-        // MULTI-PHASE STATE MACHINE FOR 100% AUTHENTIC SEQUENCES
         function runMultiPhaseAnimation(index, effectName) {
             const artEl = document.getElementById(`art-${index}`);
             let globalFrame = 0;
-            const logoStr = getActiveAsciiLogo();
-            const lines = logoStr.split("\n");
+            const lines = asciiLogo.split("\n");
             const numRows = lines.length;
             const numCols = lines[0].length;
-
-            const totalSequenceFrames = 60; // 4-phase loop
+            const totalSequenceFrames = 60;
 
             setInterval(() => {
                 globalFrame++;
                 const frameInLoop = globalFrame % totalSequenceFrames;
-                const phase = Math.floor((frameInLoop / totalSequenceFrames) * 4); // Phase 0..3
                 const pal = palettes[currentPaletteKey].colors;
                 let html = "";
-
-                lines.forEach((rIdx, rowStr) => {
-                    // Handled inside row loop
-                });
 
                 lines.forEach((line, rIdx) => {
                     let lineHtml = "";
@@ -638,13 +560,8 @@
                         let opacity = 1;
                         let displayChar = ch;
 
-                        // AUTHENTIC MULTI-PHASE SEQUENCE PER EFFECT
                         switch (effectName) {
                             case "burn":
-                                // Phase 0: Spark ignition at bottom row
-                                // Phase 1: Flame front rising with red/yellow sparks
-                                // Phase 2: Smoke particles drifting up as letters cool down
-                                // Phase 3: Settled glowing letters
                                 const burnRowTarget = numRows - (frameInLoop / 12);
                                 if (rIdx > burnRowTarget + 1) {
                                     color = pal[0];
@@ -659,10 +576,6 @@
                                 break;
 
                             case "matrix":
-                                // Phase 0: Drop code streams from top
-                                // Phase 1: White leading head with green tails
-                                // Phase 2: Tails clear into frozen green text
-                                // Phase 3: Glitch pulse
                                 const matrixPos = (frameInLoop * 1.5 + cIdx * 3) % (numRows + 8);
                                 if (Math.abs(rIdx - matrixPos) < 1) {
                                     displayChar = "█";
@@ -676,10 +589,6 @@
                                 break;
 
                             case "fireworks":
-                                // Phase 0: Rocket rising
-                                // Phase 1: Burst explosion!
-                                // Phase 2: Particle deceleration
-                                // Phase 3: Settled letters
                                 if (frameInLoop < 15) {
                                     const rocketY = numRows - (frameInLoop / 2.5);
                                     if (Math.abs(rIdx - rocketY) < 1 && cIdx === 15) {
@@ -705,8 +614,6 @@
                                 break;
 
                             case "decrypt":
-                                // Phase 0..2: Decryption scanner line moving left to right
-                                // Phase 3: Full text decrypted
                                 const decryptCol = Math.floor((frameInLoop / 45) * numCols);
                                 if (cIdx > decryptCol) {
                                     displayChar = String.fromCharCode(0x21 + ((cIdx * 7 + globalFrame * 3) % 55));
@@ -1008,10 +915,6 @@
                 artEl.innerHTML = html;
             }, 65);
         }
-
-        customInput.oninput = () => {
-            buildGrid();
-        };
 
         function copyCode(text) {
             navigator.clipboard.writeText(text);
