@@ -16,6 +16,8 @@
             --accent-cyan: #00f0ff;
             --accent-green: #00ff66;
             --accent-purple: #9d4edd;
+            --accent-magenta: #ff007f;
+            --accent-yellow: #ffb703;
             --text-main: #e2e8f0;
             --text-muted: #94a3b8;
             --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
@@ -43,18 +45,6 @@
             max-width: 1100px;
             margin: 0 auto;
             width: 100%;
-        }
-
-        .badge {
-            display: inline-block;
-            padding: 0.25rem 0.75rem;
-            background: rgba(0, 240, 255, 0.1);
-            color: var(--accent-cyan);
-            border: 1px solid rgba(0, 240, 255, 0.3);
-            border-radius: 9999px;
-            font-size: 0.85rem;
-            font-weight: 600;
-            margin-bottom: 1rem;
         }
 
         h1 {
@@ -223,22 +213,22 @@
             border: 1px solid var(--surface-border);
             border-bottom-left-radius: 12px;
             border-bottom-right-radius: 12px;
-            padding: 1.5rem;
+            padding: 2rem;
             font-family: var(--font-mono);
-            font-size: 1rem;
-            line-height: 1.4;
+            font-size: 1.1rem;
+            line-height: 1.5;
             overflow: hidden;
             position: relative;
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: inset 0 0 40px rgba(0,0,0,0.8);
+            box-shadow: inset 0 0 50px rgba(0,0,0,0.9);
         }
 
-        pre#output {
-            color: var(--accent-cyan);
+        div#output-canvas {
+            font-family: var(--font-mono);
             white-space: pre;
-            text-shadow: 0 0 8px rgba(0, 240, 255, 0.4);
+            text-align: center;
         }
 
         .cli-copy-box {
@@ -291,7 +281,6 @@
 <body>
 
     <header>
-        <span class="badge">Pure Rust Engine • 2ms Startup</span>
         <h1>ttfx-rs Showcase</h1>
         <p class="subtitle">37 Terminal Text Animation Effects rewritten in Rust for maximum performance and zero dependencies.</p>
     </header>
@@ -320,7 +309,7 @@
                 <div></div>
             </div>
             <div class="terminal-screen">
-                <pre id="output">Loading animation...</pre>
+                <div id="output-canvas">Loading animation...</div>
             </div>
 
             <div class="cli-copy-box">
@@ -348,7 +337,7 @@
         let animationTimer = null;
 
         const effectsListEl = document.getElementById("effects-list");
-        const outputEl = document.getElementById("output");
+        const outputCanvas = document.getElementById("output-canvas");
         const customTextEl = document.getElementById("custom-text");
         const activeTitleEl = document.getElementById("active-effect-title");
         const cliCommandEl = document.getElementById("cli-command");
@@ -382,43 +371,77 @@
             
             const text = customTextEl.value || "4NV1L RUNTIME";
             let frame = 0;
-            const maxFrames = 30;
-
-            const chars = "01#$%&@*+~?-=";
+            const maxFrames = 45;
+            const matrixChars = "01#$%&@*+~?-=░▒▓█";
 
             animationTimer = setInterval(() => {
                 frame++;
-                let display = "";
+                let html = "";
 
-                if (activeEffect === "matrix" || activeEffect === "binarypath") {
+                if (activeEffect === "matrix") {
                     for (let i = 0; i < text.length; i++) {
-                        if (frame < 15 && Math.random() > 0.3) {
-                            display += chars[Math.floor(Math.random() * chars.length)];
+                        if (frame < 30 && Math.random() > 0.25) {
+                            const char = matrixChars[Math.floor(Math.random() * matrixChars.length)];
+                            const isLead = Math.random() > 0.7;
+                            const color = isLead ? "#ffffff" : "#00ff66";
+                            const shadow = isLead ? "0 0 10px #ffffff" : "0 0 8px #00ff66";
+                            html += `<span style="color:${color}; text-shadow:${shadow};">${char}</span>`;
                         } else {
-                            display += text[i];
+                            html += `<span style="color:#00ff66; font-weight:600; text-shadow:0 0 10px #00ff66;">${text[i]}</span>`;
                         }
                     }
-                } else if (activeEffect === "laseretch" || activeEffect === "vhstape") {
-                    const offset = frame % (text.length + 5);
+                } else if (activeEffect === "fireworks" || activeEffect === "bubbles") {
+                    const colors = ["#ff007f", "#00f0ff", "#ffb703", "#00ff66", "#9d4edd"];
                     for (let i = 0; i < text.length; i++) {
-                        if (i <= offset) {
-                            display += text[i];
+                        const color = colors[(i + frame) % colors.length];
+                        const opacity = Math.min(1, frame / 20);
+                        const glow = `0 0 12px ${color}`;
+                        html += `<span style="color:${color}; opacity:${opacity}; text-shadow:${glow};">${text[i]}</span>`;
+                    }
+                } else if (activeEffect === "vhstape" || activeEffect === "unstable") {
+                    const isGlitch = frame % 7 === 0 || frame % 11 === 0;
+                    for (let i = 0; i < text.length; i++) {
+                        if (isGlitch && Math.random() > 0.4) {
+                            const color = Math.random() > 0.5 ? "#ff007f" : "#00f0ff";
+                            html += `<span style="color:${color}; text-shadow:2px 0 #ff007f, -2px 0 #00f0ff; position:relative; top:${(Math.random()-0.5)*4}px;">${text[i]}</span>`;
                         } else {
-                            display += " ";
+                            html += `<span style="color:#e2e8f0;">${text[i]}</span>`;
+                        }
+                    }
+                } else if (activeEffect === "laseretch" || activeEffect === "synthgrid") {
+                    const offset = Math.floor((frame / maxFrames) * (text.length + 4));
+                    for (let i = 0; i < text.length; i++) {
+                        if (i === offset) {
+                            html += `<span style="color:#ffffff; text-shadow:0 0 15px #00f0ff, 0 0 25px #00f0ff; font-weight:bold;">█</span>`;
+                        } else if (i < offset) {
+                            html += `<span style="color:#00f0ff; text-shadow:0 0 8px #00f0ff;">${text[i]}</span>`;
+                        } else {
+                            html += `<span style="opacity:0.1;">.</span>`;
                         }
                     }
                 } else {
-                    const revealCount = Math.floor((frame / maxFrames) * text.length);
-                    display = text.slice(0, revealCount) + "_".repeat(Math.max(0, text.length - revealCount));
+                    const progress = frame / maxFrames;
+                    const revealCount = Math.floor(progress * text.length);
+                    for (let i = 0; i < text.length; i++) {
+                        if (i <= revealCount) {
+                            html += `<span style="color:#00f0ff; text-shadow:0 0 8px rgba(0,240,255,0.6);">${text[i]}</span>`;
+                        } else {
+                            html += `<span style="opacity:0.2;">.</span>`;
+                        }
+                    }
                 }
 
-                outputEl.textContent = display;
+                outputCanvas.innerHTML = html;
 
                 if (frame >= maxFrames) {
                     clearInterval(animationTimer);
-                    outputEl.textContent = text;
+                    let finalHtml = "";
+                    for (let i = 0; i < text.length; i++) {
+                        finalHtml += `<span style="color:#00f0ff; font-weight:600; text-shadow:0 0 10px #00f0ff;">${text[i]}</span>`;
+                    }
+                    outputCanvas.innerHTML = finalHtml;
                 }
-            }, 60);
+            }, 50);
         }
 
         customTextEl.oninput = () => {
