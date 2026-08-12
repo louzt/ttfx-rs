@@ -12,4 +12,5 @@ pub mod gradient;
 mod tests;
 
 pub use effects::{Effect, ALL_EFFECTS, EffectInfo};
-pub use engine::{run_animation, Grid};
+pub use engine::{run_animation, Grid, Cell};
+pub use gradient::{Gradient, GradientBuilder, GradientDirection, Rgb};

@@ -42,6 +42,10 @@ struct Cli {
     #[arg(value_name = "EFFECT")]
     effect: Option<String>,
 
+    /// List all available animation effects
+    #[arg(long = "list-effects")]
+    list_effects: bool,
+
     /// Randomly select an effect to apply
     #[arg(short = 'R', long = "random-effect")]
     random_effect: bool,
@@ -73,6 +77,13 @@ struct Cli {
 
 fn main() {
     let cli = Cli::parse();
+
+    if cli.list_effects {
+        for info in ALL_EFFECTS {
+            println!("{:<20} {}", info.name, info.description);
+        }
+        return;
+    }
 
     // Read input
     let input = if let Some(path) = &cli.input_file {

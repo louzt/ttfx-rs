@@ -1,6 +1,6 @@
 use crossterm::{
     cursor, execute, queue,
-    style::{self, Color, ResetColor, SetForegroundColor},
+    style::{self, Color, ResetColor, SetBackgroundColor, SetForegroundColor},
     terminal,
 };
 use std::io::{self, BufWriter, IsTerminal, Write};
@@ -14,6 +14,7 @@ use unicode_width::UnicodeWidthStr;
 pub struct Cell {
     pub ch: char,
     pub fg: Option<Color>,
+    pub bg: Option<Color>,
     pub visible: bool,
 }
 
@@ -22,6 +23,7 @@ impl Cell {
         Self {
             ch,
             fg: None,
+            bg: None,
             visible: false,
         }
     }
@@ -81,6 +83,7 @@ impl Grid {
             for cell in row {
                 cell.visible = true;
                 cell.fg = None;
+                cell.bg = None;
             }
         }
     }
@@ -91,6 +94,7 @@ impl Grid {
             for cell in row {
                 cell.visible = false;
                 cell.fg = None;
+                cell.bg = None;
             }
         }
     }
@@ -117,6 +121,67 @@ impl Grid {
             }
         }
         pos
+    }
+
+    /// Render current grid frame as an ANSI string buffer (ideal for Ratatui / TUI framework integration)
+    pub fn render_to_string(&self) -> String {
+        let mut out = String::with_capacity(self.width * self.height * 12);
+        let mut last_fg: Option<Color> = None;
+        let mut last_bg: Option<Color> = None;
+
+        for (i, row) in self.cells.iter().enumerate() {
+            for cell in row {
+                if cell.visible {
+                    if cell.fg != last_fg {
+                        if let Some(fg) = cell.fg {
+                            match fg {
+                                Color::Rgb { r, g, b } => {
+                                    out.push_str(&format!("\x1b[38;2;{};{};{}m", r, g, b));
+                                }
+                                Color::Reset => {
+                                    out.push_str("\x1b[39m");
+                                }
+                                _ => {}
+                            }
+                        } else {
+                            out.push_str("\x1b[39m");
+                        }
+                        last_fg = cell.fg;
+                    }
+                    if cell.bg != last_bg {
+                        if let Some(bg) = cell.bg {
+                            match bg {
+                                Color::Rgb { r, g, b } => {
+                                    out.push_str(&format!("\x1b[48;2;{};{};{}m", r, g, b));
+                                }
+                                Color::Reset => {
+                                    out.push_str("\x1b[49m");
+                                }
+                                _ => {}
+                            }
+                        } else {
+                            out.push_str("\x1b[49m");
+                        }
+                        last_bg = cell.bg;
+                    }
+                    out.push(cell.ch);
+                } else {
+                    if last_fg.is_some() || last_bg.is_some() {
+                        out.push_str("\x1b[0m");
+                        last_fg = None;
+                        last_bg = None;
+                    }
+                    out.push(' ');
+                }
+            }
+            if i < self.cells.len() - 1 {
+                out.push('\n');
+            }
+        }
+        if last_fg.is_some() || last_bg.is_some() {
+            out.push_str("\x1b[0m");
+        }
+        out
     }
 }
 
@@ -196,6 +261,7 @@ pub fn render_frame(
     queue!(out, cursor::MoveTo(0, origin_row)).ok();
 
     let mut last_fg: Option<Color> = Some(Color::Reset);
+    let mut last_bg: Option<Color> = Some(Color::Reset);
 
     for (i, row) in grid.cells.iter().enumerate() {
         let mut col = 0u16;
@@ -214,11 +280,22 @@ pub fn render_frame(
                     }
                     last_fg = cell.fg;
                 }
+                if cell.bg != last_bg {
+                    if let Some(bg) = cell.bg {
+                        queue!(out, SetBackgroundColor(bg)).ok();
+                    } else if last_bg.is_some() {
+                        queue!(out, ResetColor).ok();
+                    }
+                    last_bg = cell.bg;
+                }
                 queue!(out, style::Print(cell.ch)).ok();
             } else {
-                if last_fg.is_some() && last_fg != Some(Color::Reset) {
+                if (last_fg.is_some() && last_fg != Some(Color::Reset))
+                    || (last_bg.is_some() && last_bg != Some(Color::Reset))
+                {
                     queue!(out, ResetColor).ok();
                     last_fg = None;
+                    last_bg = None;
                 }
                 queue!(out, style::Print(' ')).ok();
             }
@@ -235,7 +312,9 @@ pub fn render_frame(
         }
     }
 
-    if last_fg.is_some() && last_fg != Some(Color::Reset) {
+    if (last_fg.is_some() && last_fg != Some(Color::Reset))
+        || (last_bg.is_some() && last_bg != Some(Color::Reset))
+    {
         queue!(out, ResetColor).ok();
     }
 

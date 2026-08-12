@@ -244,6 +244,41 @@ impl Gradient {
     }
 }
 
+/// Fluent builder for creating multi-stop color gradients
+#[derive(Default, Debug, Clone)]
+pub struct GradientBuilder {
+    stops: Vec<Rgb>,
+    steps: usize,
+}
+
+impl GradientBuilder {
+    pub fn new() -> Self {
+        Self {
+            stops: Vec::new(),
+            steps: 12,
+        }
+    }
+
+    pub fn stop_hex(mut self, hex: &str) -> Self {
+        self.stops.push(Rgb::from_hex(hex));
+        self
+    }
+
+    pub fn stop_rgb(mut self, r: u8, g: u8, b: u8) -> Self {
+        self.stops.push(Rgb::new(r, g, b));
+        self
+    }
+
+    pub fn steps(mut self, steps: usize) -> Self {
+        self.steps = steps;
+        self
+    }
+
+    pub fn build(self) -> Gradient {
+        Gradient::new(&self.stops, self.steps)
+    }
+}
+
 #[cfg(test)]
 #[path = "tests/gradient.rs"]
 mod tests;
