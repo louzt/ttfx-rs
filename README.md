@@ -8,7 +8,7 @@
 
 `ttfx-rs` is a high-speed, 100% Rust implementation of the popular terminal text animation engine. Built for 2ms cold-start execution, 120 FPS rendering, zero runtime dependencies, and dual-mode execution (CLI binary + Rust library crate).
 
-![ttfx-rs Interactive Showcase Preview](https://raw.githubusercontent.com/louzt/ttfx-rs/main/docs/preview.jpg)
+![ttfx-rs Interactive Showcase Preview](./docs/preview.png)
 
 * **Live Interactive Web Showcase**: [https://louzt.github.io/ttfx-rs/](https://louzt.github.io/ttfx-rs/)
 * **GitHub Repository**: [https://github.com/louzt/ttfx-rs](https://github.com/louzt/ttfx-rs)
