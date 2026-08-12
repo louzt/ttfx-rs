@@ -543,13 +543,13 @@
             text-decoration: none;
             display: inline-flex;
             align-items: center;
-            gap: 3px;
         }
         
         .llm-btn {
             color: var(--accent-purple);
             border-color: rgba(168, 85, 247, 0.3);
             background: rgba(168, 85, 247, 0.08);
+            font-weight: 600;
         }
 
         .copy-btn:hover, .llm-btn:hover, .src-btn:hover {
@@ -616,7 +616,7 @@
                 </div>
             </section>
 
-            <!-- Feature Highlights Grid -->
+            <!-- Features Overview Cards -->
             <div class="features-grid">
                 <div class="feature-card">
                     <div class="feature-icon">⚡</div>
@@ -898,7 +898,7 @@
                             <code>$ echo "${currentPreset}" | ttfx ${eff.name}</code>
                             <div class="actions-group">
                                 <button class="copy-btn" onclick="copyCode('echo \"${currentPreset}\" | ttfx ${eff.name}')">Copy</button>
-                                <button class="llm-btn" onclick="copyLlmPrompt('${eff.name}')">LLM 🤖</button>
+                                <button class="llm-btn" onclick="copyLlmPrompt('${eff.name}')">LLM</button>
                                 <a class="src-btn" href="https://github.com/louzt/ttfx-rs/blob/main/src/effects/${eff.name}.rs" target="_blank">Code ↗</a>
                             </div>
                         </div>
@@ -942,6 +942,37 @@
                         let displayChar = ch;
 
                         switch (effectName) {
+                            case "vhstape":
+                                const vhsScanBar = Math.floor((globalFrame * 0.8) % numRows);
+                                if (rIdx === vhsScanBar) {
+                                    // Horizontal VHS Tracking Shift
+                                    const vhsShift = Math.sin(globalFrame * 0.5) * 4;
+                                    const srcX = Math.max(0, Math.min(numCols - 1, Math.floor(cIdx + vhsShift)));
+                                    displayChar = lines[rIdx][srcX] || ch;
+                                    color = (cIdx % 2 === 0) ? "#ff007f" : "#00f0ff"; // Chromatic Aberration
+                                } else if (rIdx === (vhsScanBar + 1) % numRows) {
+                                    opacity = 0.45;
+                                } else {
+                                    color = pal[0];
+                                }
+                                break;
+
+                            case "unstable":
+                                const unstablePhase = globalFrame % 24;
+                                if (unstablePhase < 6) {
+                                    // Violent Signal Corruption
+                                    displayChar = String.fromCharCode(0x21 + ((cIdx * 13 + rIdx * 7 + globalFrame * 5) % 55));
+                                    color = Math.random() > 0.4 ? "#ff0000" : "#ffffff";
+                                } else if (unstablePhase < 12) {
+                                    // Power Dropout / Flicker
+                                    opacity = Math.random() > 0.3 ? 1 : 0.1;
+                                    color = pal[1];
+                                } else {
+                                    // Signal Stabilized
+                                    color = pal[0];
+                                }
+                                break;
+
                             case "beams":
                                 const beamPos = (globalFrame * 3 + rIdx * 2) % (numCols + 10);
                                 if (Math.abs(cIdx - beamPos) < 2) {
@@ -1087,17 +1118,6 @@
                                     color = pal[1];
                                 } else {
                                     opacity = 0.15;
-                                }
-                                break;
-
-                            case "vhstape":
-                            case "unstable":
-                                const glitchLine = Math.floor((globalFrame / 3) % numRows);
-                                if (rIdx === glitchLine && Math.random() > 0.3) {
-                                    color = Math.random() > 0.5 ? "#ff007f" : "#00f0ff";
-                                    displayChar = Math.random() > 0.6 ? "▒" : ch;
-                                } else {
-                                    color = pal[0];
                                 }
                                 break;
 
