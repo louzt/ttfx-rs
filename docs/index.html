@@ -8,6 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="./presets/presets.js"></script>
     <style>
         :root {
             --bg: #06070a;
@@ -768,6 +769,71 @@
             color: var(--accent-cyan);
             text-decoration: none;
         }
+
+        /* FAQ Section */
+        .faq-section {
+            margin-top: 4rem;
+            padding-top: 2.5rem;
+            border-top: 1px solid var(--card-border);
+        }
+
+        .faq-title {
+            font-family: var(--font-mono);
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: #ffffff;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .faq-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.25rem;
+        }
+
+        @media (max-width: 768px) {
+            .faq-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .faq-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 10px;
+            padding: 1.25rem;
+            transition: border-color 0.2s ease;
+        }
+
+        .faq-card:hover {
+            border-color: rgba(0, 240, 255, 0.4);
+        }
+
+        .faq-question {
+            font-family: var(--font-mono);
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--accent-cyan);
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .faq-answer {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            line-height: 1.5;
+        }
+
+        .faq-answer code {
+            color: var(--accent-green);
+            background: rgba(255,255,255,0.05);
+            padding: 0.1rem 0.3rem;
+            border-radius: 4px;
+            font-family: var(--font-mono);
+        }
     </style>
 </head>
 <body>
@@ -863,9 +929,10 @@
                 <div class="carousel-group">
                     <span class="carousel-label">Preset Banner:</span>
                     <div class="carousel-badge-container">
-                        <button class="arrow-btn" onclick="cyclePreset(-1)">‹</button>
+                        <button class="arrow-btn" onclick="cyclePreset(-1)" title="Previous Preset">‹</button>
+                        <button class="arrow-btn" onclick="pickRandomPreset()" title="Random Preset">🔀</button>
                         <span class="preset-badge" id="preset-badge">LOUZT</span>
-                        <button class="arrow-btn" onclick="cyclePreset(1)">›</button>
+                        <button class="arrow-btn" onclick="cyclePreset(1)" title="Next Preset">›</button>
                     </div>
                 </div>
 
@@ -880,6 +947,37 @@
 
             <!-- 3 Columns Grid -->
             <div class="effects-grid" id="grid"></div>
+
+            <!-- FAQ Section -->
+            <section class="faq-section">
+                <h2 class="faq-title">Frequently Asked Questions</h2>
+                <div class="faq-grid">
+                    <div class="faq-card">
+                        <div class="faq-question">⚡ How fast is cold-start execution with ttfx-rs?</div>
+                        <div class="faq-answer">Compiled natively in Rust with zero heavy runtime overhead, <code>ttfx-rs</code> cold-starts in ~2ms, making it ideal for high-speed terminal pipes, shell scripts, and CLI banners.</div>
+                    </div>
+                    <div class="faq-card">
+                        <div class="faq-question">🤖 How do LLMs & AI Assistants trigger text animations?</div>
+                        <div class="faq-answer">Every effect card includes a one-click <code>LLM</code> button that copies pre-structured system prompts with custom <code>GradientBuilder</code> hex colors to instruct Claude, Gemini, ChatGPT, or AGY agents.</div>
+                    </div>
+                    <div class="faq-card">
+                        <div class="faq-question">📦 Can I import ttfx-rs as a library in my Rust crate?</div>
+                        <div class="faq-answer">Yes! <code>ttfx-rs</code> is published on Crates.io as a dual CLI binary and library crate. You can import <code>Grid</code> and <code>ALL_EFFECTS</code> directly into your Rust code via <code>src/lib.rs</code>.</div>
+                    </div>
+                    <div class="faq-card">
+                        <div class="faq-question">🖥️ Does ttfx-rs support DEC 2026 synchronized rendering?</div>
+                        <div class="faq-answer">Yes! <code>ttfx-rs</code> emits DEC 2026 TTY escape sequences (<code>\x1b[?2026h</code> / <code>\x1b[?2026l</code>) to guarantee 100% flicker-free synchronized frame updates across Kitty, Alacritty, WezTerm, Ghostty, and Windows Terminal.</div>
+                    </div>
+                    <div class="faq-card">
+                        <div class="faq-question">🎨 How do I customize text presets and gradient themes?</div>
+                        <div class="faq-answer">Cycle through text presets with the <code>‹ 🔀 ›</code> controls or open the <code>🎨 Color Studio & Map</code> modal to adjust 4-stop gradient palettes in real-time at 120 FPS.</div>
+                    </div>
+                    <div class="faq-card">
+                        <div class="faq-question">🛡️ Are there any external runtime dependencies?</div>
+                        <div class="faq-answer">Zero! <code>ttfx-rs</code> has no external dynamic library dependencies and compiles down to a compact 3.3 MB static binary with full cross-platform ANSI support.</div>
+                    </div>
+                </div>
+            </section>
 
             <footer>
                 <p>Crafted by <a href="https://github.com/louzt" target="_blank">Louzt</a> • Open Source under MIT OR Apache-2.0 • <a href="https://github.com/louzt/ttfx-rs" target="_blank">GitHub Repository</a> | <a href="https://github.com/LOUST-PRO" target="_blank">LOUST-PRO Organization</a></p>
@@ -981,60 +1079,20 @@
         }
         drawBgGrid();
 
-        // ASCII FONT PRESETS
-        const presets = ["LOUZT", "LOUST", "4NV1L", "H3PH3ST", "CYBER", "DOOM"];
+        // ASCII FONT PRESETS (Imported modularly from docs/presets/presets.js)
+        const presets = window.presetsList || ["LOUZT", "LOUST", "4NV1L", "H3PH3ST", "CYBER", "DOOM", "MATRIX", "NEON", "RUST", "HYPER", "AGY"];
         let currentPresetIdx = 0;
+        const blockFonts = window.blockFonts || {};
 
-        const blockFonts = {
-            "LOUZT": `
-  ██╗      ██████╗ ██╗  ██╗███████╗████████╗
-  ██║     ██╔═══██╗██║  ██║╚══███╔╝╚══██╔══╝
-  ██║     ██║   ██║██║  ██║  ███╔╝    ██║   
-  ██║     ██║   ██║██║  ██║ ███╔╝     ██║   
-  ███████╗╚██████╔╝╚█████╔╝███████╗   ██║   
-  ╚══════╝ ╚═════╝  ╚════╝ ╚══════╝   ╚═╝   
-`,
-            "LOUST": `
-  ██╗      ██████╗ ██╗  ██╗███████╗████████╗
-  ██║     ██╔═══██╗██║  ██║██╔════╝╚══██╔══╝
-  ██║     ██║   ██║██║  ██║███████╗   ██║   
-  ██║     ██║   ██║██║  ██║╚════██║   ██║   
-  ███████╗╚██████╔╝╚█████╔╝███████║   ██║   
-  ╚══════╝ ╚═════╝  ╚════╝ ╚══════╝   ╚═╝   
-`,
-            "4NV1L": `
-  ██╗  ██╗███╗   ██╗██╗   ██╗██╗  ██╗██╗     
-  ██║  ██║████╗  ██║██║   ██║██║  ██║██║     
-  ███████║██╔██╗ ██║██║   ██║███████║██║     
-  ╚════██║██║╚██╗██║╚██╗ ██╔╝╚════██║██║     
-       ██║██║ ╚████║ ╚████╔╝      ██║███████╗
-       ╚═╝╚═╝  ╚═══╝  ╚═══╝       ╚═╝╚══════╝
-`,
-            "H3PH3ST": `
- ██╗  ██╗██████╗ ██████╗ ██╗  ██╗██████╗ ███████╗████████╗
- ██║  ██║╚════██╗██╔══██╗██║  ██║╚════██╗██╔════╝╚══██╔══╝
- ███████║ █████╔╝██████╔╝███████║ █████╔╝███████╗   ██║   
- ██╔══██║ ╚═══██╗██╔═══╝ ██╔══██║ ╚═══██╗╚════██║   ██║   
- ██║  ██║██████╔╝██║     ██║  ██║██████╔╝███████║   ██║   
- ╚═╝  ╚═╝╚═════╝ ╚═╝     ╚═╝  ╚═╝╚═════╝ ╚══════╝   ╚═╝   
-`,
-            "CYBER": `
-  ██████╗██╗   ██╗██████╗ ███████╗██████╗ 
- ██╔════╝╚██╗ ██╔╝██╔══██╗██╔════╝██╔══██╗
- ██║      ╚████╔╝ ██████╔╝█████╗  ██████╔╝
- ██║       ╚██╔╝  ██╔══██╗██╔══╝  ██╔══██╗
- ╚██████╗   ██║   ██████╔╝███████╗██║  ██║
-  ╚═════╝   ╚═╝   ╚═════╝ ╚══════╝╚═╝  ╚═╝
-`,
-            "DOOM": `
-  ██████╗  ██████╗  ██████╗ ███╗   ███╗
-  ██╔══██╗██╔═══██╗██╔═══██╗████╗ ████║
-  ██║  ██║██║   ██║██║   ██║██╔████╔██║
-  ██║  ██║██║   ██║██║   ██║██║╚██╔╝██║
-  ██████╔╝╚██████╔╝╚██████╔╝██║ ╚═╝ ██║
-  ╚═════╝  ╚═════╝  ╚═════╝ ╚═╝     ╚═╝
-`
-        };
+        function pickRandomPreset() {
+            let nextIdx;
+            do {
+                nextIdx = Math.floor(Math.random() * presets.length);
+            } while (nextIdx === currentPresetIdx && presets.length > 1);
+            currentPresetIdx = nextIdx;
+            presetBadge.textContent = presets[currentPresetIdx];
+            buildGrid();
+        }
 
         const palettes = {
             cyberpunk: { name: "Cyberpunk Neon", colors: ["#00f0ff", "#ff007f", "#9d4edd", "#ffffff"] },
