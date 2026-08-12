@@ -446,6 +446,7 @@ dependencies = [
  "clap",
  "crossterm",
  "rand",
+ "unicode-segmentation",
  "unicode-width",
 ]
 
