@@ -124,9 +124,18 @@
             fill: currentColor;
         }
 
-        /* Hero Section */
+        /* Hero Section & 100vh Fold */
+        .hero-screen-fold {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 1.5rem 0 2rem 0;
+            box-sizing: border-box;
+        }
+
         .hero {
-            padding: 1.5rem 0 1.5rem 0;
+            padding: 1rem 0 1rem 0;
             text-align: center;
             display: flex;
             flex-direction: column;
@@ -767,102 +776,104 @@
 
     <div class="content-wrapper">
         <div class="container">
-            <!-- Top Nav -->
-            <div class="top-nav">
-                <div class="meta-header">
-                    <span>TTFX-RS</span>
-                    <span class="badge-tag">RUST NATIVE</span>
-                    <span class="badge-tag" style="color:var(--accent-purple); border-color:rgba(168,85,247,0.4);">LLM READY</span>
-                </div>
-                <div style="display:flex; gap:10px;">
-                    <a href="https://crates.io/crates/ttfx-rs" target="_blank" class="gh-btn" style="border-color: rgba(249, 115, 22, 0.4); color: #f97316;">
-                        <svg viewBox="0 0 24 24" style="fill:currentColor;"><path d="M2 3h20v18H2V3zm2 2v14h16V5H4zm3 3h10v2H7V8zm0 4h10v2H7v-2zm0 4h7v2H7v-2z"/></svg>
-                        <span>Crates.io</span>
-                    </a>
-                    <a href="https://github.com/louzt/ttfx-rs" target="_blank" class="gh-btn">
-                        <svg viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
-                        <span>GitHub Repository</span>
-                    </a>
-                </div>
-            </div>
-
-            <!-- Hero Section -->
-            <section class="hero">
-                <h1 class="hero-title">Terminal Text Animation <span>Engine in Rust</span></h1>
-                <p class="hero-subtitle">
-                    A zero-dependency, ultra-fast engine powering 38 native ANSI animation effects. Built LLM-friendly for AI coding assistants, global CLI pipelines, and embeddable Rust apps.
-                </p>
-                <div class="hero-actions">
-                    <a href="#grid-section" class="cta-btn">
-                        <span>Explore All 38 Effects</span>
-                        <span>↓</span>
-                    </a>
-                    <a href="https://github.com/louzt/ttfx-rs" target="_blank" class="secondary-btn">
-                        <span>View Rust Crate Docs</span>
-                    </a>
-                </div>
-            </section>
-
-            <!-- Features Overview Cards -->
-            <div class="features-grid">
-                <div class="feature-card">
-                    <div class="feature-icon">⚡</div>
-                    <div class="feature-title">2ms Cold Start & 120 FPS</div>
-                    <div class="feature-desc">Compiled natively in Rust with zero heavy runtime overhead, delivering instantaneous startup and smooth physics.</div>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">🤖</div>
-                    <div class="feature-title">LLM-Friendly Prompting</div>
-                    <div class="feature-desc">One-click copy LLM prompts with GradientBuilder color parameters to instruct Claude, Gemini, ChatGPT, or AGY agents.</div>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">📦</div>
-                    <div class="feature-title">Dual CLI & Library Crate</div>
-                    <div class="feature-desc">Run directly via terminal pipes (`echo TEXT | ttfx matrix`) or import natively into any Rust application via `src/lib.rs`.</div>
-                </div>
-            </div>
-
-            <!-- Minimal Stats Bar -->
-            <div class="stats-bar">
-                <div class="stat-item">
-                    <div class="stat-num" id="stat-effects">38</div>
-                    <div class="stat-label">Effects</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-num">354</div>
-                    <div class="stat-label">Parity Tests</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-num">3.3 MB</div>
-                    <div class="stat-label">Static Binary</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-num">2 ms</div>
-                    <div class="stat-label">Startup</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-num">0</div>
-                    <div class="stat-label">Runtime Deps</div>
-                </div>
-            </div>
-
-            <!-- Controls Bar with Clickable Carousel Badge (< >) & Custom Color Studio -->
-            <div class="controls-bar" id="grid-section">
-                <div class="carousel-group">
-                    <span class="carousel-label">Preset Banner:</span>
-                    <div class="carousel-badge-container">
-                        <button class="arrow-btn" onclick="cyclePreset(-1)">‹</button>
-                        <span class="preset-badge" id="preset-badge">LOUZT</span>
-                        <button class="arrow-btn" onclick="cyclePreset(1)">›</button>
+            <div class="hero-screen-fold">
+                <!-- Top Nav -->
+                <div class="top-nav">
+                    <div class="meta-header">
+                        <span>TTFX-RS</span>
+                        <span class="badge-tag">RUST NATIVE</span>
+                        <span class="badge-tag" style="color:var(--accent-purple); border-color:rgba(168,85,247,0.4);">LLM READY</span>
+                    </div>
+                    <div style="display:flex; gap:10px;">
+                        <a href="https://crates.io/crates/ttfx-rs" target="_blank" class="gh-btn" style="border-color: rgba(249, 115, 22, 0.4); color: #f97316;">
+                            <svg viewBox="0 0 24 24" style="fill:currentColor;"><path d="M2 3h20v18H2V3zm2 2v14h16V5H4zm3 3h10v2H7V8zm0 4h10v2H7v-2zm0 4h7v2H7v-2z"/></svg>
+                            <span>Crates.io</span>
+                        </a>
+                        <a href="https://github.com/louzt/ttfx-rs" target="_blank" class="gh-btn">
+                            <svg viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+                            <span>GitHub Repository</span>
+                        </a>
                     </div>
                 </div>
 
-                <div class="palette-options">
-                    <div id="palette-options" style="display:flex; gap:0.5rem; flex-wrap:wrap;"></div>
-                    <button class="palette-pill studio-btn" onclick="openColorStudio()">
-                        <span>🎨</span>
-                        <span>Color Studio & Map</span>
-                    </button>
+                <!-- Hero Section -->
+                <section class="hero">
+                    <h1 class="hero-title">Terminal Text Animation <span>Engine in Rust</span></h1>
+                    <p class="hero-subtitle">
+                        A zero-dependency, ultra-fast engine powering 38 native ANSI animation effects. Built LLM-friendly for AI coding assistants, global CLI pipelines, and embeddable Rust apps.
+                    </p>
+                    <div class="hero-actions">
+                        <a href="#grid-section" class="cta-btn">
+                            <span>Explore All 38 Effects</span>
+                            <span>↓</span>
+                        </a>
+                        <a href="https://github.com/louzt/ttfx-rs" target="_blank" class="secondary-btn">
+                            <span>View Rust Crate Docs</span>
+                        </a>
+                    </div>
+                </section>
+
+                <!-- Features Overview Cards -->
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon">⚡</div>
+                        <div class="feature-title">2ms Cold Start & 120 FPS</div>
+                        <div class="feature-desc">Compiled natively in Rust with zero heavy runtime overhead, delivering instantaneous startup and smooth physics.</div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🤖</div>
+                        <div class="feature-title">LLM-Friendly Prompting</div>
+                        <div class="feature-desc">One-click copy LLM prompts with GradientBuilder color parameters to instruct Claude, Gemini, ChatGPT, or AGY agents.</div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">📦</div>
+                        <div class="feature-title">Dual CLI & Library Crate</div>
+                        <div class="feature-desc">Run directly via terminal pipes (`echo TEXT | ttfx matrix`) or import natively into any Rust application via `src/lib.rs`.</div>
+                    </div>
+                </div>
+
+                <!-- Minimal Stats Bar -->
+                <div class="stats-bar">
+                    <div class="stat-item">
+                        <div class="stat-num" id="stat-effects">38</div>
+                        <div class="stat-label">Effects</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-num">354</div>
+                        <div class="stat-label">Parity Tests</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-num">3.3 MB</div>
+                        <div class="stat-label">Static Binary</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-num">2 ms</div>
+                        <div class="stat-label">Startup</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-num">0</div>
+                        <div class="stat-label">Runtime Deps</div>
+                    </div>
+                </div>
+
+                <!-- Controls Bar with Clickable Carousel Badge (< >) & Custom Color Studio -->
+                <div class="controls-bar" id="grid-section">
+                    <div class="carousel-group">
+                        <span class="carousel-label">Preset Banner:</span>
+                        <div class="carousel-badge-container">
+                            <button class="arrow-btn" onclick="cyclePreset(-1)">‹</button>
+                            <span class="preset-badge" id="preset-badge">LOUZT</span>
+                            <button class="arrow-btn" onclick="cyclePreset(1)">›</button>
+                        </div>
+                    </div>
+
+                    <div class="palette-options">
+                        <div id="palette-options" style="display:flex; gap:0.5rem; flex-wrap:wrap;"></div>
+                        <button class="palette-pill studio-btn" onclick="openColorStudio()">
+                            <span>🎨</span>
+                            <span>Color Studio & Map</span>
+                        </button>
+                    </div>
                 </div>
             </div>
 
