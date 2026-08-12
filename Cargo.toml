@@ -4,8 +4,13 @@ version = "0.1.0"
 edition = "2021"
 authors = ["David Mireles <davidmirelesll@outlook.com>", "Louzt <louzt@users.noreply.github.com>"]
 license = "MIT OR Apache-2.0"
-description = "High-performance Rust Terminal Text Effects (ttfx) library with 38 ANSI text animations"
+description = "High-performance Rust Terminal Text Effects engine with 38 physics-driven ANSI animations"
 repository = "https://github.com/louzt/ttfx-rs"
+homepage = "https://louzt.github.io/ttfx-rs/"
+documentation = "https://docs.rs/ttfx-rs"
+readme = "README.md"
+keywords = ["terminal", "tui", "text-effects", "ansi", "matrix"]
+categories = ["command-line-utilities", "rendering"]
 
 [dependencies]
 crossterm = "0.29"
