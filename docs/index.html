@@ -298,6 +298,7 @@
             border: 1px solid var(--card-border);
             border-radius: 10px;
             padding: 0.75rem 1rem;
+            margin-top: 2.5rem;
             margin-bottom: 1.25rem;
             display: flex;
             align-items: center;
@@ -855,25 +856,25 @@
                         <div class="stat-label">Runtime Deps</div>
                     </div>
                 </div>
+            </div>
 
-                <!-- Controls Bar with Clickable Carousel Badge (< >) & Custom Color Studio -->
-                <div class="controls-bar" id="grid-section">
-                    <div class="carousel-group">
-                        <span class="carousel-label">Preset Banner:</span>
-                        <div class="carousel-badge-container">
-                            <button class="arrow-btn" onclick="cyclePreset(-1)">‹</button>
-                            <span class="preset-badge" id="preset-badge">LOUZT</span>
-                            <button class="arrow-btn" onclick="cyclePreset(1)">›</button>
-                        </div>
+            <!-- Controls Bar with Clickable Carousel Badge (< >) & Custom Color Studio -->
+            <div class="controls-bar" id="grid-section">
+                <div class="carousel-group">
+                    <span class="carousel-label">Preset Banner:</span>
+                    <div class="carousel-badge-container">
+                        <button class="arrow-btn" onclick="cyclePreset(-1)">‹</button>
+                        <span class="preset-badge" id="preset-badge">LOUZT</span>
+                        <button class="arrow-btn" onclick="cyclePreset(1)">›</button>
                     </div>
+                </div>
 
-                    <div class="palette-options">
-                        <div id="palette-options" style="display:flex; gap:0.5rem; flex-wrap:wrap;"></div>
-                        <button class="palette-pill studio-btn" onclick="openColorStudio()">
-                            <span>🎨</span>
-                            <span>Color Studio & Map</span>
-                        </button>
-                    </div>
+                <div class="palette-options">
+                    <div id="palette-options" style="display:flex; gap:0.5rem; flex-wrap:wrap;"></div>
+                    <button class="palette-pill studio-btn" onclick="openColorStudio()">
+                        <span>🎨</span>
+                        <span>Color Studio & Map</span>
+                    </button>
                 </div>
             </div>
 
