@@ -4,11 +4,13 @@ use crossterm::{
     terminal,
 };
 use std::io::{self, BufWriter, IsTerminal, Write};
+use std::ops::{Index, IndexMut};
 use std::time::{Duration, Instant};
-use unicode_width::UnicodeWidthChar;
+use unicode_segmentation::UnicodeSegmentation;
+use unicode_width::UnicodeWidthStr;
 
-/// A single cell in the grid
-#[derive(Clone)]
+/// A single cell in the rendering grid
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Cell {
     pub ch: char,
     pub fg: Option<Color>,
@@ -25,7 +27,7 @@ impl Cell {
     }
 }
 
-/// The rendering grid
+/// Rendering grid containing rows of cells
 pub struct Grid {
     pub cells: Vec<Vec<Cell>>,
     pub width: usize,
@@ -38,15 +40,23 @@ impl Grid {
         let stripped = strip_ansi(input);
         let lines: Vec<&str> = stripped.lines().collect();
         let height = lines.len();
-        let width = lines.iter().map(|l| l.chars().count()).max().unwrap_or(0);
+
+        // Calculate max grapheme width per row (Unicode grapheme clusters)
+        let width = lines
+            .iter()
+            .map(|l| l.graphemes(true).count())
+            .max()
+            .unwrap_or(0);
 
         let mut cells = Vec::with_capacity(height);
+
         for line in &lines {
             let mut row = Vec::with_capacity(width);
-            for ch in line.chars() {
+            for g in line.graphemes(true) {
+                let ch = g.chars().next().unwrap_or(' ');
                 row.push(Cell::new(ch));
             }
-            // Pad to width
+            // Pad remaining row cells to match grid width
             while row.len() < width {
                 row.push(Cell::new(' '));
             }
@@ -60,10 +70,12 @@ impl Grid {
         }
     }
 
+    /// Check if all cells in grid are visible
     pub fn all_visible(&self) -> bool {
         self.cells.iter().all(|row| row.iter().all(|c| c.visible))
     }
 
+    /// Set all cells to visible
     pub fn set_all_visible(&mut self) {
         for row in &mut self.cells {
             for cell in row {
@@ -73,6 +85,7 @@ impl Grid {
         }
     }
 
+    /// Set all cells to invisible
     pub fn set_all_invisible(&mut self) {
         for row in &mut self.cells {
             for cell in row {
@@ -82,7 +95,7 @@ impl Grid {
         }
     }
 
-    /// Get all non-space character positions
+    /// Get all non-space character positions (y, x)
     pub fn char_positions(&self) -> Vec<(usize, usize)> {
         let mut pos = Vec::new();
         for (y, row) in self.cells.iter().enumerate() {
@@ -95,9 +108,9 @@ impl Grid {
         pos
     }
 
-    /// Get all character positions including spaces
+    /// Get all character positions including spaces (y, x)
     pub fn all_positions(&self) -> Vec<(usize, usize)> {
-        let mut pos = Vec::new();
+        let mut pos = Vec::with_capacity(self.width * self.height);
         for y in 0..self.height {
             for x in 0..self.width {
                 pos.push((y, x));
@@ -107,21 +120,59 @@ impl Grid {
     }
 }
 
-/// Strip ANSI escape sequences from a string
+/// Allow indexing grid directly via grid[y][x]
+impl Index<usize> for Grid {
+    type Output = Vec<Cell>;
+
+    fn index(&self, y: usize) -> &Self::Output {
+        &self.cells[y]
+    }
+}
+
+/// Allow mutable indexing grid directly via grid[y][x]
+impl IndexMut<usize> for Grid {
+    fn index_mut(&mut self, y: usize) -> &mut Self::Output {
+        &mut self.cells[y]
+    }
+}
+
+/// FSM-based ANSI stripper supporting CSI and OSC sequences
 fn strip_ansi(input: &str) -> String {
     let mut out = String::with_capacity(input.len());
     let mut chars = input.chars().peekable();
+
     while let Some(ch) = chars.next() {
         if ch == '\x1b' {
-            // Skip ESC [ ... (final byte 0x40-0x7E)
-            if chars.peek() == Some(&'[') {
-                chars.next(); // consume '['
-                while let Some(&c) = chars.peek() {
+            match chars.peek() {
+                Some(&'[') => {
+                    // CSI escape sequence \x1b[ ... [0-9;]*[mK...a-zA-Z]
                     chars.next();
-                    if c.is_ascii() && (0x40..=0x7E).contains(&(c as u8)) {
-                        break;
+                    while let Some(&c) = chars.peek() {
+                        chars.next();
+                        if c.is_ascii() && (0x40..=0x7E).contains(&(c as u8)) {
+                            break;
+                        }
                     }
                 }
+                Some(&']') => {
+                    // OSC escape sequence \x1b] ... (\x07 or \x1b\)
+                    chars.next();
+                    while let Some(&c) = chars.peek() {
+                        chars.next();
+                        if c == '\x07' {
+                            break;
+                        }
+                        if c == '\x1b' && chars.peek() == Some(&'\\') {
+                            chars.next();
+                            break;
+                        }
+                    }
+                }
+                Some(&'(') | Some(&')') => {
+                    chars.next();
+                    chars.next();
+                }
+                _ => {}
             }
         } else {
             out.push(ch);
@@ -130,9 +181,9 @@ fn strip_ansi(input: &str) -> String {
     out
 }
 
-/// Render a single frame, repositioning cursor to `origin_row`
-/// Uses synchronized output to prevent flicker — the terminal holds
-/// all updates until the end marker, then paints in one pass.
+/// Render a single frame, repositioning cursor to `origin_row`.
+/// Uses synchronized update DEC private mode 2026 (\x1b[?2026h / \x1b[?2026l)
+/// to prevent terminal tearing and flickering in modern terminals (Kitty, Alacritty, WezTerm, Ghostty).
 pub fn render_frame(
     grid: &Grid,
     out: &mut BufWriter<io::Stdout>,
@@ -140,17 +191,19 @@ pub fn render_frame(
     term_width: u16,
 ) {
     // Begin synchronized update (DEC private mode 2026)
-    // Terminals that support this will buffer all output until the end marker
     out.write_all(b"\x1b[?2026h").ok();
 
     queue!(out, cursor::MoveTo(0, origin_row)).ok();
 
-    let mut last_fg: Option<Color> = Some(Color::Reset); // sentinel to force first set
+    let mut last_fg: Option<Color> = Some(Color::Reset);
 
     for (i, row) in grid.cells.iter().enumerate() {
         let mut col = 0u16;
+
         for cell in row {
-            let w = cell.ch.width().unwrap_or(1);
+            let mut s = [0u8; 4];
+            let str_val = cell.ch.encode_utf8(&mut s);
+            let w = UnicodeWidthStr::width(str_val).max(1);
 
             if cell.visible {
                 if cell.fg != last_fg {
@@ -171,6 +224,7 @@ pub fn render_frame(
             }
             col += w as u16;
         }
+
         // Pad remainder of line with spaces to overwrite any stale content
         while col < term_width {
             queue!(out, style::Print(' ')).ok();
@@ -191,7 +245,7 @@ pub fn render_frame(
     out.flush().ok();
 }
 
-/// Run the animation loop
+/// Absolute deadline drift-free animation sleep loop
 pub fn run_animation<F>(grid: &mut Grid, frame_rate: u32, mut tick: F)
 where
     F: FnMut(&mut Grid, usize) -> bool, // returns true when done
@@ -211,10 +265,9 @@ where
     let term_width = terminal::size().map(|(w, _)| w).unwrap_or(80);
     let frame_duration = Duration::from_micros(1_000_000 / frame_rate as u64);
     let mut frame = 0;
+    let mut next_frame_deadline = Instant::now();
 
     loop {
-        let start = Instant::now();
-
         let done = tick(grid, frame);
         render_frame(grid, &mut stdout, origin_row, term_width);
 
@@ -223,14 +276,15 @@ where
         }
 
         frame += 1;
+        next_frame_deadline += frame_duration;
 
-        let elapsed = start.elapsed();
-        if elapsed < frame_duration {
-            std::thread::sleep(frame_duration - elapsed);
+        let now = Instant::now();
+        if now < next_frame_deadline {
+            std::thread::sleep(next_frame_deadline - now);
         }
     }
 
-    // Final frame — the effect already set final colors, just ensure visibility
+    // Final frame — ensure visibility
     for row in &mut grid.cells {
         for cell in row {
             cell.visible = true;

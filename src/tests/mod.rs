@@ -48,8 +48,8 @@ fn assert_final_state(grid: &Grid, original_input: &str) {
 
     for y in 0..grid.height {
         for x in 0..grid.width {
-            let cell = &grid.cells[y][x];
-            let orig = &expected.cells[y][x];
+            let cell = &grid[y][x];
+            let orig = &expected[y][x];
 
             if orig.ch != ' ' {
                 assert!(
@@ -176,45 +176,29 @@ effect_test!(wipe_tiny, WipeEffect, TINY_INPUT);
 effect_test!(wormhole_tiny, WormholeEffect, TINY_INPUT);
 
 // ── deterministic behaviour tests ────────────────────────────────────────────
-//
-// For effects with no random component we can assert specific properties
-// about intermediate or final state in addition to convergence.
 
 #[test]
 fn wipe_activates_chars_in_diagonal_order() {
-    // In the wipe effect characters at x+y=0 (top-left) activate before
-    // characters at larger diagonals.
-    //
-    // The easer uses in_out_circ which is very slow to start (S-curve),
-    // so we need ~10 ticks before the first diagonal is activated on a
-    // 5×3 grid (7 groups, dm=2, easer_speed ≈ 0.071).
     let input = "ABCDE\nFGHIJ\nKLMNO";
     let mut grid = Grid::from_input(input);
     let mut effect = WipeEffect::new(&grid);
 
-    // At 8 ticks the in_out_circ easer is mid-curve: groups 0–4 activated,
-    // groups 5–6 still pending (all 7 groups activate around tick 11).
     for _ in 0..8 {
         effect.tick(&mut grid);
     }
 
-    // Top-left (diagonal 0) activates around tick 4 — must be visible.
     assert!(
-        grid.cells[0][0].visible,
+        grid[0][0].visible,
         "wipe: top-left cell should be visible after 8 ticks"
     );
-    // Bottom-right (diagonal 6) activates around tick 11 — must still be hidden.
     assert!(
-        !grid.cells[2][4].visible,
+        !grid[2][4].visible,
         "wipe: bottom-right cell should not be visible yet after 8 ticks"
     );
 }
 
 #[test]
 fn print_reveals_row_by_row() {
-    // The print effect types each row at the canvas bottom and scrolls
-    // already-typed rows up. After only a few ticks at least one cell on
-    // the bottom row must be visible but the effect must not yet be done.
     let input = "ABCDE\nFGHIJ\nKLMNO";
     let mut grid = Grid::from_input(input);
     let mut effect = PrintEffect::new(&grid);
@@ -231,7 +215,7 @@ fn print_reveals_row_by_row() {
         "print should still be running after a handful of ticks (done at {done_at:?})"
     );
     let bottom = grid.height - 1;
-    let bottom_visible = grid.cells[bottom].iter().any(|c| c.visible);
+    let bottom_visible = grid[bottom].iter().any(|c| c.visible);
     assert!(
         bottom_visible,
         "print: typing row (canvas bottom) should have at least one visible cell"
@@ -240,15 +224,14 @@ fn print_reveals_row_by_row() {
 
 #[test]
 fn grid_chars_are_preserved_through_wipe() {
-    // Explicit character-by-character check on a known string.
     let input = "ABC";
     let mut grid = Grid::from_input(input);
     let mut effect = WipeEffect::new(&grid);
     run_to_done(&mut |g| effect.tick(g), &mut grid, "WipeEffect");
 
-    assert_eq!(grid.cells[0][0].ch, 'A');
-    assert_eq!(grid.cells[0][1].ch, 'B');
-    assert_eq!(grid.cells[0][2].ch, 'C');
+    assert_eq!(grid[0][0].ch, 'A');
+    assert_eq!(grid[0][1].ch, 'B');
+    assert_eq!(grid[0][2].ch, 'C');
 }
 
 #[test]
@@ -258,16 +241,13 @@ fn grid_chars_are_preserved_through_print() {
     let mut effect = PrintEffect::new(&grid);
     run_to_done(&mut |g| effect.tick(g), &mut grid, "PrintEffect");
 
-    assert_eq!(grid.cells[0][0].ch, 'X');
-    assert_eq!(grid.cells[0][1].ch, 'Y');
-    assert_eq!(grid.cells[0][2].ch, 'Z');
+    assert_eq!(grid[0][0].ch, 'X');
+    assert_eq!(grid[0][1].ch, 'Y');
+    assert_eq!(grid[0][2].ch, 'Z');
 }
 
 // ── binarypath-specific tests ───────────────────────────────────────────────
 
-/// Space cells must remain spaces after binarypath completes.
-/// Regression test: binary digits flying through space positions used to
-/// overwrite cell.ch with '0'/'1', which persisted into the final frame.
 #[test]
 fn binarypath_spaces_not_corrupted() {
     let input = "A B C";
@@ -275,46 +255,37 @@ fn binarypath_spaces_not_corrupted() {
     let mut effect = BinaryPathEffect::new(&grid);
     run_to_done(&mut |g| effect.tick(g), &mut grid, "BinaryPathEffect");
 
-    // Positions 1 and 3 are spaces — they must still be spaces.
     assert_eq!(
-        grid.cells[0][1].ch, ' ',
+        grid[0][1].ch, ' ',
         "space at (0,1) was corrupted by binary digits"
     );
     assert_eq!(
-        grid.cells[0][3].ch, ' ',
+        grid[0][3].ch, ' ',
         "space at (0,3) was corrupted by binary digits"
     );
-    // And the actual characters must be correct.
-    assert_eq!(grid.cells[0][0].ch, 'A');
-    assert_eq!(grid.cells[0][2].ch, 'B');
-    assert_eq!(grid.cells[0][4].ch, 'C');
+    assert_eq!(grid[0][0].ch, 'A');
+    assert_eq!(grid[0][2].ch, 'B');
+    assert_eq!(grid[0][4].ch, 'C');
 }
 
-/// Trailing padding spaces (from multi-line input where lines differ in
-/// length) must not show binary digits after completion.
 #[test]
 fn binarypath_padding_spaces_clean() {
     let input = "Hi\nWorld!";
     let mut grid = Grid::from_input(input);
-    // Grid is 6 wide (length of "World!"), row 0 is "Hi" + 4 padding spaces.
     assert_eq!(grid.width, 6);
 
     let mut effect = BinaryPathEffect::new(&grid);
     run_to_done(&mut |g| effect.tick(g), &mut grid, "BinaryPathEffect");
 
-    // Padding cells on row 0 must be spaces.
     for x in 2..6 {
         assert_eq!(
-            grid.cells[0][x].ch, ' ',
+            grid[0][x].ch, ' ',
             "padding space at (0,{}) was corrupted",
             x
         );
     }
 }
 
-/// After binarypath completes, every cell in the grid must either be its
-/// original character (for non-space positions) or a space.
-/// This is a broad version of the space-corruption test.
 #[test]
 fn binarypath_all_cells_correct_after_completion() {
     let input = TEST_INPUT;
@@ -325,8 +296,8 @@ fn binarypath_all_cells_correct_after_completion() {
 
     for y in 0..grid.height {
         for x in 0..grid.width {
-            let cell = &grid.cells[y][x];
-            let orig = &expected.cells[y][x];
+            let cell = &grid[y][x];
+            let orig = &expected[y][x];
             assert_eq!(
                 cell.ch, orig.ch,
                 "cell ({},{}) has '{}' but expected '{}' after binarypath",
@@ -336,9 +307,6 @@ fn binarypath_all_cells_correct_after_completion() {
     }
 }
 
-/// During the travel phase, no cell outside the grid bounds should be
-/// written to. This is a smoke test that the effect doesn't panic on
-/// inputs with internal spacing.
 #[test]
 fn binarypath_sparse_input_completes() {
     let input = "  A  \n     \n  B  ";
@@ -346,13 +314,12 @@ fn binarypath_sparse_input_completes() {
     let mut effect = BinaryPathEffect::new(&grid);
     let frames = run_to_done(&mut |g| effect.tick(g), &mut grid, "BinaryPathEffect");
     assert!(frames > 0, "effect should take at least 1 frame");
-    assert_eq!(grid.cells[0][2].ch, 'A');
-    assert_eq!(grid.cells[2][2].ch, 'B');
+    assert_eq!(grid[0][2].ch, 'A');
+    assert_eq!(grid[2][2].ch, 'B');
 }
 
 // ── blackhole-specific tests ────────────────────────────────────────────────
 
-/// Space cells must remain spaces after blackhole completes.
 #[test]
 fn blackhole_spaces_not_corrupted() {
     let input = "A B C";
@@ -364,15 +331,14 @@ fn blackhole_spaces_not_corrupted() {
     for y in 0..grid.height {
         for x in 0..grid.width {
             assert_eq!(
-                grid.cells[y][x].ch, expected.cells[y][x].ch,
+                grid[y][x].ch, expected[y][x].ch,
                 "blackhole: cell ({},{}) has '{}' expected '{}'",
-                y, x, grid.cells[y][x].ch, expected.cells[y][x].ch
+                y, x, grid[y][x].ch, expected[y][x].ch
             );
         }
     }
 }
 
-/// Blackhole should handle sparse input with mostly spaces.
 #[test]
 fn blackhole_sparse_input_completes() {
     let input = "  A  \n     \n  B  ";
@@ -380,13 +346,12 @@ fn blackhole_sparse_input_completes() {
     let mut effect = BlackholeEffect::new(&grid);
     let frames = run_to_done(&mut |g| effect.tick(g), &mut grid, "BlackholeEffect");
     assert!(frames > 0);
-    assert_eq!(grid.cells[0][2].ch, 'A');
-    assert_eq!(grid.cells[2][2].ch, 'B');
+    assert_eq!(grid[0][2].ch, 'A');
+    assert_eq!(grid[2][2].ch, 'B');
 }
 
 // ── wormhole-specific tests ─────────────────────────────────────────────────
 
-/// Space cells must remain spaces after wormhole completes.
 #[test]
 fn wormhole_spaces_not_corrupted() {
     let input = "A B C";
@@ -398,16 +363,14 @@ fn wormhole_spaces_not_corrupted() {
     for y in 0..grid.height {
         for x in 0..grid.width {
             assert_eq!(
-                grid.cells[y][x].ch, expected.cells[y][x].ch,
+                grid[y][x].ch, expected[y][x].ch,
                 "wormhole: cell ({},{}) has '{}' expected '{}'",
-                y, x, grid.cells[y][x].ch, expected.cells[y][x].ch
+                y, x, grid[y][x].ch, expected[y][x].ch
             );
         }
     }
 }
 
-/// After the flash phase, all chars should be at their final positions
-/// with visible=true.
 #[test]
 fn wormhole_all_visible_after_completion() {
     let input = TEST_INPUT;
@@ -417,7 +380,7 @@ fn wormhole_all_visible_after_completion() {
 
     for (y, x) in Grid::from_input(input).char_positions() {
         assert!(
-            grid.cells[y][x].visible,
+            grid[y][x].visible,
             "wormhole: cell ({},{}) not visible after completion",
             y, x
         );
