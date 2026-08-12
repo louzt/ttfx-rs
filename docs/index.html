@@ -72,7 +72,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding-bottom: 2rem;
+            padding-bottom: 1.5rem;
         }
 
         .meta-header {
@@ -357,6 +357,7 @@
             display: flex;
             gap: 0.5rem;
             flex-wrap: wrap;
+            align-items: center;
         }
 
         .palette-pill {
@@ -384,6 +385,20 @@
             border-color: var(--accent-cyan);
             color: var(--accent-cyan);
             font-weight: 600;
+        }
+
+        .studio-btn {
+            background: rgba(168, 85, 247, 0.12);
+            border-color: rgba(168, 85, 247, 0.4);
+            color: var(--accent-purple);
+            font-weight: 700;
+        }
+
+        .studio-btn:hover {
+            background: rgba(168, 85, 247, 0.25);
+            border-color: var(--accent-purple);
+            color: #ffffff;
+            box-shadow: 0 0 12px rgba(168, 85, 247, 0.3);
         }
 
         .swatch {
@@ -564,6 +579,173 @@
             color: #ffffff;
         }
 
+        /* Color Studio Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(4, 5, 8, 0.85);
+            backdrop-filter: blur(8px);
+            z-index: 999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease;
+        }
+
+        .modal-overlay.open {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-card {
+            background: #0d0f17;
+            border: 1px solid rgba(0, 240, 255, 0.3);
+            border-radius: 14px;
+            width: 100%;
+            max-width: 620px;
+            padding: 1.75rem;
+            box-shadow: 0 12px 40px rgba(0,0,0,0.8), 0 0 30px rgba(0, 240, 255, 0.15);
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--card-border);
+            padding-bottom: 0.75rem;
+        }
+
+        .modal-title {
+            font-family: var(--font-mono);
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: var(--accent-cyan);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .close-modal-btn {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+        }
+
+        .close-modal-btn:hover {
+            color: #ffffff;
+            background: rgba(255,255,255,0.1);
+        }
+
+        .color-pickers-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+        }
+
+        .picker-box {
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+            align-items: center;
+            background: #040508;
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+            padding: 0.75rem;
+        }
+
+        .picker-label {
+            font-family: var(--font-mono);
+            font-size: 0.68rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+
+        .color-input {
+            -webkit-appearance: none;
+            border: none;
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            cursor: pointer;
+            background: none;
+        }
+
+        .color-input::-webkit-color-swatch-wrapper {
+            padding: 0;
+        }
+
+        .color-input::-webkit-color-swatch {
+            border: 2px solid var(--card-border);
+            border-radius: 50%;
+        }
+
+        .hex-input {
+            font-family: var(--font-mono);
+            font-size: 0.72rem;
+            background: #0d0f17;
+            border: 1px solid var(--card-border);
+            color: var(--text-main);
+            padding: 0.2rem 0.4rem;
+            border-radius: 4px;
+            width: 68px;
+            text-align: center;
+        }
+
+        .preset-themes-title {
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .modal-preset-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .modal-preset-btn {
+            background: #040508;
+            border: 1px solid var(--card-border);
+            color: var(--text-muted);
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            padding: 0.35rem 0.75rem;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.15s ease;
+        }
+
+        .modal-preset-btn:hover {
+            border-color: var(--accent-cyan);
+            color: var(--text-main);
+        }
+
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            border-top: 1px solid var(--card-border);
+            padding-top: 1rem;
+        }
+
         footer {
             margin-top: 4rem;
             padding: 2rem 0;
@@ -632,7 +814,7 @@
                 <div class="feature-card">
                     <div class="feature-icon">🤖</div>
                     <div class="feature-title">LLM-Friendly Prompting</div>
-                    <div class="feature-desc">One-click copy LLM prompts to seamlessly instruct Claude, Gemini, ChatGPT, or AGY agents to generate text effects.</div>
+                    <div class="feature-desc">One-click copy LLM prompts with GradientBuilder color parameters to instruct Claude, Gemini, ChatGPT, or AGY agents.</div>
                 </div>
                 <div class="feature-card">
                     <div class="feature-icon">📦</div>
@@ -665,7 +847,7 @@
                 </div>
             </div>
 
-            <!-- Controls Bar with Clickable Carousel Badge (< >) -->
+            <!-- Controls Bar with Clickable Carousel Badge (< >) & Custom Color Studio -->
             <div class="controls-bar" id="grid-section">
                 <div class="carousel-group">
                     <span class="carousel-label">Preset Banner:</span>
@@ -676,7 +858,13 @@
                     </div>
                 </div>
 
-                <div class="palette-options" id="palette-options"></div>
+                <div class="palette-options">
+                    <div id="palette-options" style="display:flex; gap:0.5rem; flex-wrap:wrap;"></div>
+                    <button class="palette-pill studio-btn" onclick="openColorStudio()">
+                        <span>🎨</span>
+                        <span>Color Studio & Map</span>
+                    </button>
+                </div>
             </div>
 
             <!-- 3 Columns Grid -->
@@ -685,6 +873,53 @@
             <footer>
                 <p>Crafted by <a href="https://github.com/louzt" target="_blank">Louzt</a> • Open Source under MIT OR Apache-2.0 • <a href="https://github.com/louzt/ttfx-rs" target="_blank">GitHub Repository</a> | <a href="https://github.com/LOUST-PRO" target="_blank">LOUST-PRO Organization</a></p>
             </footer>
+        </div>
+    </div>
+
+    <!-- Color Studio & Map Modal -->
+    <div class="modal-overlay" id="color-modal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <div class="modal-title">
+                    <span>🎨</span> Color Studio & Theme Map
+                </div>
+                <button class="close-modal-btn" onclick="closeColorStudio()">✕</button>
+            </div>
+
+            <p style="font-size:0.83rem; color:var(--text-muted); line-height:1.4;">
+                Customize the 4-stop gradient palette for all live preview cards. Copy LLM prompts pre-configured with custom <code style="color:var(--accent-cyan)">GradientBuilder</code> hex colors!
+            </p>
+
+            <div class="color-pickers-grid">
+                <div class="picker-box">
+                    <span class="picker-label">Stop 1 (Lead)</span>
+                    <input type="color" id="picker-0" class="color-input" value="#00f0ff" onchange="updateCustomColor(0, this.value)">
+                    <input type="text" id="hex-0" class="hex-input" value="#00f0ff" onchange="updateCustomColor(0, this.value)">
+                </div>
+                <div class="picker-box">
+                    <span class="picker-label">Stop 2 (Fade)</span>
+                    <input type="color" id="picker-1" class="color-input" value="#ff007f" onchange="updateCustomColor(1, this.value)">
+                    <input type="text" id="hex-1" class="hex-input" value="#ff007f" onchange="updateCustomColor(1, this.value)">
+                </div>
+                <div class="picker-box">
+                    <span class="picker-label">Stop 3 (Accent)</span>
+                    <input type="color" id="picker-2" class="color-input" value="#9d4edd" onchange="updateCustomColor(2, this.value)">
+                    <input type="text" id="hex-2" class="hex-input" value="#9d4edd" onchange="updateCustomColor(2, this.value)">
+                </div>
+                <div class="picker-box">
+                    <span class="picker-label">Stop 4 (Glow)</span>
+                    <input type="color" id="picker-3" class="color-input" value="#ffffff" onchange="updateCustomColor(3, this.value)">
+                    <input type="text" id="hex-3" class="hex-input" value="#ffffff" onchange="updateCustomColor(3, this.value)">
+                </div>
+            </div>
+
+            <div class="preset-themes-title">Theme Presets & Palette Maps:</div>
+            <div class="modal-preset-list" id="modal-presets-container"></div>
+
+            <div class="modal-actions">
+                <button class="secondary-btn" onclick="closeColorStudio()">Close</button>
+                <button class="cta-btn" onclick="applyCustomStudioColors()">Apply Theme to All Cards</button>
+            </div>
         </div>
     </div>
 
@@ -795,10 +1030,16 @@
             matrix: { name: "Matrix Green", colors: ["#00ff66", "#10b981", "#059669", "#ffffff"] },
             fire: { name: "Fire & Ember", colors: ["#ffb703", "#f97316", "#ef4444", "#ffffff"] },
             ocean: { name: "Ocean Cyan", colors: ["#00f0ff", "#38bdf8", "#3b82f6", "#ffffff"] },
-            sunset: { name: "Sunset Synth", colors: ["#f472b6", "#c084fc", "#a855f7", "#ffffff"] }
+            sunset: { name: "Sunset Synth", colors: ["#f472b6", "#c084fc", "#a855f7", "#ffffff"] },
+            dracula: { name: "Dracula Dark", colors: ["#ff79c6", "#bd93f9", "#8be9fd", "#50fa7b"] },
+            tokyonight: { name: "Tokyo Night", colors: ["#7aa2f7", "#bb9af7", "#f7768e", "#7dcfff"] },
+            catppuccin: { name: "Catppuccin", colors: ["#f5c2e7", "#cba6f7", "#89b4fa", "#a6e3a1"] },
+            nordic: { name: "Nordic Frost", colors: ["#88c0d0", "#81a1c1", "#5e81ac", "#eceff4"] },
+            monokai: { name: "Monokai Pro", colors: ["#ffd866", "#ff6188", "#a9dc76", "#78dce8"] }
         };
 
         let currentPaletteKey = "cyberpunk";
+        let customStudioColors = ["#00f0ff", "#ff007f", "#9d4edd", "#ffffff"];
         let activeIntervals = [];
 
         const effectsData = [
@@ -845,6 +1086,8 @@
         const presetBadge = document.getElementById("preset-badge");
         const paletteContainer = document.getElementById("palette-options");
         const gridEl = document.getElementById("grid");
+        const colorModal = document.getElementById("color-modal");
+        const modalPresetsContainer = document.getElementById("modal-presets-container");
 
         function clearAllIntervals() {
             activeIntervals.forEach(id => clearInterval(id));
@@ -859,18 +1102,73 @@
 
         function initPalettes() {
             paletteContainer.innerHTML = "";
-            Object.keys(palettes).forEach(key => {
+            const keys = ["cyberpunk", "matrix", "fire", "ocean", "sunset"];
+            keys.forEach(key => {
                 const pal = palettes[key];
                 const btn = document.createElement("button");
                 btn.className = `palette-pill ${key === currentPaletteKey ? 'active' : ''}`;
                 btn.innerHTML = `<span class="swatch" style="background:${pal.colors[0]}"></span>${pal.name}`;
                 btn.onclick = () => {
                     currentPaletteKey = key;
+                    customStudioColors = [...pal.colors];
+                    syncModalInputs();
                     initPalettes();
                     buildGrid();
                 };
                 paletteContainer.appendChild(btn);
             });
+        }
+
+        function openColorStudio() {
+            syncModalInputs();
+            renderModalPresetButtons();
+            colorModal.classList.add("open");
+        }
+
+        function closeColorStudio() {
+            colorModal.classList.remove("open");
+        }
+
+        function syncModalInputs() {
+            const colors = palettes[currentPaletteKey] ? palettes[currentPaletteKey].colors : customStudioColors;
+            colors.forEach((c, idx) => {
+                if (document.getElementById(`picker-${idx}`)) {
+                    document.getElementById(`picker-${idx}`).value = c;
+                    document.getElementById(`hex-${idx}`).value = c;
+                }
+            });
+        }
+
+        function updateCustomColor(idx, value) {
+            if (/^#[0-9A-F]{6}$/i.test(value)) {
+                customStudioColors[idx] = value;
+                document.getElementById(`picker-${idx}`).value = value;
+                document.getElementById(`hex-${idx}`).value = value;
+            }
+        }
+
+        function renderModalPresetButtons() {
+            modalPresetsContainer.innerHTML = "";
+            Object.keys(palettes).forEach(key => {
+                const pal = palettes[key];
+                const btn = document.createElement("button");
+                btn.className = "modal-preset-btn";
+                btn.innerHTML = `<span class="swatch" style="background:${pal.colors[0]}"></span>${pal.name}`;
+                btn.onclick = () => {
+                    currentPaletteKey = key;
+                    customStudioColors = [...pal.colors];
+                    syncModalInputs();
+                };
+                modalPresetsContainer.appendChild(btn);
+            });
+        }
+
+        function applyCustomStudioColors() {
+            currentPaletteKey = "custom";
+            palettes.custom = { name: "Custom Palette", colors: [...customStudioColors] };
+            initPalettes();
+            buildGrid();
+            closeColorStudio();
         }
 
         // EVEN-WIDTH ASCII LINE NORMALIZER
@@ -931,7 +1229,7 @@
             const timerId = setInterval(() => {
                 globalFrame++;
                 const frameInLoop = globalFrame % totalSequenceFrames;
-                const pal = palettes[currentPaletteKey].colors;
+                const pal = palettes[currentPaletteKey] ? palettes[currentPaletteKey].colors : customStudioColors;
                 let html = "";
 
                 lines.forEach((line, rIdx) => {
@@ -951,11 +1249,10 @@
                             case "vhstape":
                                 const vhsScanBar = Math.floor((globalFrame * 0.8) % numRows);
                                 if (rIdx === vhsScanBar) {
-                                    // Horizontal VHS Tracking Shift
                                     const vhsShift = Math.sin(globalFrame * 0.5) * 4;
                                     const srcX = Math.max(0, Math.min(numCols - 1, Math.floor(cIdx + vhsShift)));
                                     displayChar = lines[rIdx][srcX] || ch;
-                                    color = (cIdx % 2 === 0) ? "#ff007f" : "#00f0ff"; // Chromatic Aberration
+                                    color = (cIdx % 2 === 0) ? pal[1] : pal[0];
                                 } else if (rIdx === (vhsScanBar + 1) % numRows) {
                                     opacity = 0.45;
                                 } else {
@@ -966,15 +1263,12 @@
                             case "unstable":
                                 const unstablePhase = globalFrame % 24;
                                 if (unstablePhase < 6) {
-                                    // Violent Signal Corruption
                                     displayChar = String.fromCharCode(0x21 + ((cIdx * 13 + rIdx * 7 + globalFrame * 5) % 55));
-                                    color = Math.random() > 0.4 ? "#ff0000" : "#ffffff";
+                                    color = Math.random() > 0.4 ? pal[1] : pal[3];
                                 } else if (unstablePhase < 12) {
-                                    // Power Dropout / Flicker
                                     opacity = Math.random() > 0.3 ? 1 : 0.1;
                                     color = pal[1];
                                 } else {
-                                    // Signal Stabilized
                                     color = pal[0];
                                 }
                                 break;
@@ -982,7 +1276,7 @@
                             case "beams":
                                 const beamPos = (globalFrame * 3 + rIdx * 2) % (numCols + 10);
                                 if (Math.abs(cIdx - beamPos) < 2) {
-                                    color = "#ffffff";
+                                    color = pal[3];
                                     displayChar = "█";
                                 } else if (cIdx < beamPos) {
                                     color = pal[0];
@@ -1005,7 +1299,7 @@
                                 const hlBar = (globalFrame * 2.5) % (numCols + 12);
                                 const hlDist = Math.abs(cIdx - hlBar);
                                 if (hlDist < 2) {
-                                    color = "#ffffff";
+                                    color = pal[3];
                                 } else if (hlDist < 5) {
                                     color = pal[0];
                                     opacity = 0.85;
@@ -1030,7 +1324,7 @@
                                 if (rIdx > burnRowTarget + 1) {
                                     color = pal[0];
                                 } else if (Math.abs(rIdx - burnRowTarget) <= 1.2) {
-                                    color = Math.random() > 0.3 ? "#ffb703" : "#ef4444";
+                                    color = Math.random() > 0.3 ? pal[1] : pal[2];
                                     displayChar = Math.random() > 0.5 ? "▲" : "*";
                                 } else {
                                     displayChar = Math.random() > 0.5 ? "~" : ".";
@@ -1043,7 +1337,7 @@
                                 const matrixPos = (globalFrame * 2 + cIdx * 3) % (numRows + 8);
                                 if (Math.abs(rIdx - matrixPos) < 1) {
                                     displayChar = "█";
-                                    color = "#ffffff";
+                                    color = pal[3];
                                 } else if (rIdx < matrixPos) {
                                     displayChar = String.fromCharCode(0x30 + ((rIdx + cIdx + globalFrame) % 10));
                                     color = pal[0];
@@ -1057,7 +1351,7 @@
                                     const rocketY = numRows - (frameInLoop / 2.5);
                                     if (Math.abs(rIdx - rocketY) < 1 && cIdx === Math.floor(numCols / 2)) {
                                         displayChar = "▲";
-                                        color = "#ffffff";
+                                        color = pal[3];
                                     } else {
                                         opacity = 0.1;
                                     }
@@ -1081,7 +1375,7 @@
                                 const decryptCol = Math.floor((frameInLoop / 45) * numCols);
                                 if (cIdx > decryptCol) {
                                     displayChar = String.fromCharCode(0x21 + ((cIdx * 7 + globalFrame * 3) % 55));
-                                    color = (cIdx === decryptCol + 1) ? "#ffffff" : (pal[2] || pal[0]);
+                                    color = (cIdx === decryptCol + 1) ? pal[3] : (pal[2] || pal[0]);
                                 } else {
                                     color = pal[0];
                                 }
@@ -1104,7 +1398,7 @@
                                 const laserRow = Math.floor((globalFrame / 8) % numRows);
                                 const laserCol = (globalFrame * 4) % numCols;
                                 if (rIdx === laserRow && Math.abs(cIdx - laserCol) < 2) {
-                                    color = "#ffffff";
+                                    color = pal[3];
                                     displayChar = "█";
                                 } else if (rIdx < laserRow || (rIdx === laserRow && cIdx < laserCol)) {
                                     color = pal[0];
@@ -1118,7 +1412,7 @@
                                 const blackHoleRadius = (globalFrame % 30);
                                 const distCenter = Math.hypot(cIdx - (numCols / 2), rIdx - (numRows / 2));
                                 if (Math.abs(distCenter - blackHoleRadius) < 1.8) {
-                                    color = "#ffffff";
+                                    color = pal[3];
                                     displayChar = "●";
                                 } else if (distCenter < blackHoleRadius) {
                                     color = pal[1];
@@ -1129,7 +1423,7 @@
 
                             case "synthgrid":
                                 if (rIdx === numRows - 1) {
-                                    color = "#ff007f";
+                                    color = pal[1];
                                     displayChar = "═";
                                 } else {
                                     color = pal[(rIdx + globalFrame) % pal.length];
@@ -1138,7 +1432,7 @@
 
                             case "thunderstorm":
                                 if (globalFrame % 18 === 0 || globalFrame % 18 === 1) {
-                                    color = "#ffffff";
+                                    color = pal[3];
                                 } else {
                                     color = pal[0];
                                     opacity = (rIdx + cIdx + globalFrame) % 4 === 0 ? 0.3 : 1;
@@ -1174,7 +1468,7 @@
                                 const orbAngle = (globalFrame * 0.2) + (cIdx * 0.15);
                                 const orbY = Math.sin(orbAngle) * 2.5 + (numRows / 2);
                                 if (Math.abs(rIdx - orbY) < 0.8) {
-                                    color = "#ffffff";
+                                    color = pal[3];
                                     displayChar = "●";
                                 } else {
                                     color = pal[0];
@@ -1212,7 +1506,7 @@
                                 const charPos = rIdx * numCols + cIdx;
                                 if (charPos === printedChars) {
                                     displayChar = "█";
-                                    color = "#ffffff";
+                                    color = pal[3];
                                 } else if (charPos < printedChars) {
                                     color = pal[0];
                                 } else {
@@ -1293,7 +1587,7 @@
                                 const spotX1 = Math.floor(Math.sin(globalFrame * 0.08) * (numCols / 2.5) + (numCols / 2));
                                 const spotX2 = Math.floor(Math.cos(globalFrame * 0.1) * (numCols / 2.5) + (numCols / 2));
                                 if (Math.abs(cIdx - spotX1) < 3.5 || Math.abs(cIdx - spotX2) < 3.5) {
-                                    color = "#ffffff";
+                                    color = pal[3];
                                 } else {
                                     color = pal[0];
                                     opacity = 0.2;
@@ -1329,7 +1623,7 @@
                             case "sweep":
                                 const sweepX = (globalFrame * 2) % (numCols + 8);
                                 if (Math.abs(cIdx - sweepX) < 2) {
-                                    color = "#ffffff";
+                                    color = pal[3];
                                 } else if (cIdx < sweepX) {
                                     color = pal[0];
                                 } else {
@@ -1378,9 +1672,18 @@
         }
 
         function copyLlmPrompt(effectName) {
-            const prompt = `Use ttfx-rs (Terminal Text Effects in Rust) to render an animated banner for the user using the '${effectName}' effect.\n1. Install ttfx CLI: cargo install --git https://github.com/louzt/ttfx-rs\n2. Run effect: echo "<YOUR_TEXT>" | ttfx ${effectName}\nPlease ask the user for the text they want to animate with the '${effectName}' effect!`;
+            const colors = palettes[currentPaletteKey] ? palettes[currentPaletteKey].colors : customStudioColors;
+            const prompt = `Use ttfx-rs (Terminal Text Effects in Rust) to render an animated banner for the user using the '${effectName}' effect.
+- Target Effect: ${effectName}
+- Color Theme Palette Stops: [${colors.join(", ")}]
+- Rust Gradient API Builder:
+  let gradient = GradientBuilder::new().stop_hex("${colors[0]}").stop_hex("${colors[1] || colors[0]}").steps(12).build();
+
+1. Install ttfx CLI: cargo install ttfx-rs
+2. Run command: echo "<YOUR_TEXT>" | ttfx ${effectName}
+Please ask the user for the text they want to animate with the '${effectName}' effect!`;
             navigator.clipboard.writeText(prompt);
-            alert(`LLM Prompt for '${effectName}' copied to clipboard!\n\nPaste it directly into Claude Code, ChatGPT, Gemini, or AGY!`);
+            alert(`LLM Prompt for '${effectName}' with custom GradientBuilder theme copied to clipboard!\n\nPaste directly into Claude Code, ChatGPT, Gemini, or AGY!`);
         }
 
         initPalettes();
