@@ -3,22 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ttfx-rs — All 38 Terminal Text Effects</title>
-    <meta name="description" content="All TerminalTextEffects written in Rust for maximum performance and zero dependencies.">
+    <title>ttfx-rs — Terminal Text Animation Engine in Rust</title>
+    <meta name="description" content="High-performance, zero-dependency Rust port of TerminalTextEffects. 38 native ANSI animation engines for CLI & Rust apps.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg: #08090d;
-            --card-bg: #0f1118;
-            --card-border: #1a1e2c;
+            --bg: #06070a;
+            --card-bg: #0d0f17;
+            --card-border: #1a1e2e;
             --term-bg: #030406;
             --text-main: #f1f5f9;
             --text-muted: #8e9bb0;
             --accent-cyan: #00f0ff;
             --accent-green: #00ff66;
             --accent-purple: #a855f7;
+            --accent-magenta: #ff007f;
             --font-sans: 'Inter', system-ui, sans-serif;
             --font-mono: 'Fira Code', monospace;
         }
@@ -29,32 +30,70 @@
             padding: 0;
         }
 
+        html {
+            scroll-behavior: smooth;
+        }
+
         body {
             background-color: var(--bg);
             color: var(--text-main);
             font-family: var(--font-sans);
             line-height: 1.5;
-            padding: 2rem 1.5rem;
+            padding: 0;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Animated Grid Dot Matrix Background */
+        #bg-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 0;
+            pointer-events: none;
+            opacity: 0.45;
+        }
+
+        .content-wrapper {
+            position: relative;
+            z-index: 1;
         }
 
         .container {
             max-width: 1280px;
             margin: 0 auto;
+            padding: 2rem 1.5rem;
         }
 
+        /* Header Nav */
         .top-nav {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 1.5rem;
+            padding-bottom: 2rem;
         }
 
         .meta-header {
             font-family: var(--font-mono);
             font-size: 0.8rem;
             color: var(--text-muted);
-            letter-spacing: 0.1em;
+            letter-spacing: 0.12em;
             text-transform: uppercase;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .badge-tag {
+            background: rgba(0, 240, 255, 0.1);
+            color: var(--accent-cyan);
+            border: 1px solid rgba(0, 240, 255, 0.3);
+            padding: 0.15rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 600;
         }
 
         .gh-btn {
@@ -64,10 +103,10 @@
             background: rgba(255,255,255,0.05);
             border: 1px solid var(--card-border);
             color: var(--text-main);
-            padding: 0.4rem 0.8rem;
+            padding: 0.45rem 0.9rem;
             border-radius: 6px;
             font-family: var(--font-mono);
-            font-size: 0.8rem;
+            font-size: 0.82rem;
             text-decoration: none;
             transition: all 0.15s ease;
         }
@@ -76,6 +115,7 @@
             background: rgba(255,255,255,0.12);
             border-color: var(--accent-cyan);
             color: var(--accent-cyan);
+            box-shadow: 0 0 15px rgba(0, 240, 255, 0.2);
         }
 
         .gh-btn svg {
@@ -84,41 +124,142 @@
             fill: currentColor;
         }
 
-        h1 {
-            font-size: 2.8rem;
-            font-weight: 700;
+        /* Hero Section */
+        .hero {
+            padding: 3rem 0 4rem 0;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .hero-title {
+            font-size: 3.6rem;
+            font-weight: 800;
             font-family: var(--font-mono);
-            margin-bottom: 0.5rem;
+            letter-spacing: -0.02em;
+            margin-bottom: 1rem;
             color: #ffffff;
+            line-height: 1.1;
         }
 
-        h1 span {
-            color: var(--accent-cyan);
+        .hero-title span {
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
 
-        .desc {
+        .hero-subtitle {
+            font-size: 1.2rem;
             color: var(--text-muted);
-            font-size: 1.05rem;
-            max-width: 780px;
-            margin-bottom: 1.5rem;
+            max-width: 820px;
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+
+        .hero-actions {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .cta-btn {
+            background: linear-gradient(135deg, #00f0ff, #0099ff);
+            color: #000000;
+            font-family: var(--font-mono);
+            font-size: 0.95rem;
+            font-weight: 700;
+            padding: 0.75rem 1.75rem;
+            border-radius: 8px;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 20px rgba(0, 240, 255, 0.3);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .cta-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 28px rgba(0, 240, 255, 0.5);
+        }
+
+        .secondary-btn {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--card-border);
+            color: var(--text-main);
+            font-family: var(--font-mono);
+            font-size: 0.95rem;
+            font-weight: 600;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+
+        .secondary-btn:hover {
+            border-color: var(--accent-cyan);
+            color: var(--accent-cyan);
+            background: rgba(0, 240, 255, 0.08);
+        }
+
+        /* Features Overview Cards */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.25rem;
+            margin-bottom: 3.5rem;
+        }
+
+        .feature-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 10px;
+            padding: 1.25rem;
+            transition: border-color 0.2s ease;
+        }
+
+        .feature-card:hover {
+            border-color: rgba(0, 240, 255, 0.4);
+        }
+
+        .feature-icon {
+            font-size: 1.4rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .feature-title {
+            font-family: var(--font-mono);
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 0.4rem;
+        }
+
+        .feature-desc {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            line-height: 1.45;
         }
 
         /* Minimal Stats Bar */
         .stats-bar {
             display: flex;
             align-items: center;
-            margin-bottom: 1.5rem;
-            padding: 0.5rem 0;
+            margin-bottom: 2rem;
+            padding: 0.8rem 0;
+            background: rgba(13, 15, 23, 0.6);
+            border-top: 1px solid var(--card-border);
+            border-bottom: 1px solid var(--card-border);
         }
 
         .stat-item {
             flex: 1;
             padding: 0 1.25rem;
             border-right: 1px solid var(--card-border);
-        }
-
-        .stat-item:first-child {
-            padding-left: 0;
+            text-align: center;
         }
 
         .stat-item:last-child {
@@ -127,7 +268,7 @@
 
         .stat-num {
             font-family: var(--font-mono);
-            font-size: 1.75rem;
+            font-size: 1.8rem;
             font-weight: 700;
             color: var(--accent-cyan);
             line-height: 1.1;
@@ -142,13 +283,13 @@
             margin-top: 0.2rem;
         }
 
-        /* Controls Bar */
+        /* Controls Bar with Clickable Carousel Badge (< >) */
         .controls-bar {
             background: var(--card-bg);
             border: 1px solid var(--card-border);
-            border-radius: 8px;
-            padding: 0.8rem 1.2rem;
-            margin-bottom: 1.5rem;
+            border-radius: 10px;
+            padding: 1rem 1.25rem;
+            margin-bottom: 2rem;
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -174,10 +315,10 @@
             display: flex;
             align-items: center;
             gap: 6px;
-            background: #06070a;
+            background: #040508;
             border: 1px solid var(--card-border);
             border-radius: 9999px;
-            padding: 0.2rem 0.5rem;
+            padding: 0.25rem 0.6rem;
         }
 
         .arrow-btn {
@@ -185,13 +326,13 @@
             border: none;
             color: var(--accent-cyan);
             border-radius: 50%;
-            width: 24px;
-            height: 24px;
+            width: 26px;
+            height: 26px;
             display: flex;
             align-items: center;
             justify-content: center;
             font-family: var(--font-mono);
-            font-size: 0.85rem;
+            font-size: 0.9rem;
             font-weight: bold;
             cursor: pointer;
             transition: all 0.15s ease;
@@ -208,7 +349,7 @@
             font-weight: 700;
             color: var(--text-main);
             padding: 0 0.5rem;
-            min-width: 90px;
+            min-width: 95px;
             text-align: center;
         }
 
@@ -260,6 +401,9 @@
         }
 
         @media (max-width: 1024px) {
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
             .effects-grid {
                 grid-template-columns: repeat(2, 1fr);
             }
@@ -268,6 +412,9 @@
         @media (max-width: 640px) {
             .effects-grid {
                 grid-template-columns: 1fr;
+            }
+            .hero-title {
+                font-size: 2.4rem;
             }
             .stats-bar {
                 flex-wrap: wrap;
@@ -404,8 +551,8 @@
         }
 
         footer {
-            margin-top: 3.5rem;
-            padding-top: 1.5rem;
+            margin-top: 4rem;
+            padding: 2rem 0;
             border-top: 1px solid var(--card-border);
             text-align: center;
             color: var(--text-muted);
@@ -420,72 +567,157 @@
 </head>
 <body>
 
-    <div class="container">
-        <div class="top-nav">
-            <div class="meta-header">TTFX · RUST PORT OF TERMINALTEXTEFFECTS</div>
-            <a href="https://github.com/louzt/ttfx-rs" target="_blank" class="gh-btn">
-                <svg viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
-                <span>GitHub Repository</span>
-            </a>
-        </div>
+    <!-- Animated Grid Dot Matrix Background -->
+    <canvas id="bg-canvas"></canvas>
 
-        <h1 id="main-title">All 38 effects<span>_</span></h1>
-        
-        <p class="desc">
-            High-performance Rust implementation of <strong>TerminalTextEffects</strong>. Built for 2ms execution, 120 FPS rendering, and zero runtime dependencies.
-        </p>
+    <div class="content-wrapper">
+        <div class="container">
+            <!-- Top Nav -->
+            <div class="top-nav">
+                <div class="meta-header">
+                    <span>TTFX-RS</span>
+                    <span class="badge-tag">RUST NATIVE</span>
+                </div>
+                <a href="https://github.com/louzt/ttfx-rs" target="_blank" class="gh-btn">
+                    <svg viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+                    <span>GitHub Repository</span>
+                </a>
+            </div>
 
-        <!-- Minimal Stats Bar -->
-        <div class="stats-bar">
-            <div class="stat-item">
-                <div class="stat-num" id="stat-effects">38</div>
-                <div class="stat-label">Effects</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-num">354</div>
-                <div class="stat-label">Parity Cases</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-num">3.3 MB</div>
-                <div class="stat-label">Static Binary</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-num">2 ms</div>
-                <div class="stat-label">Startup</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-num">0</div>
-                <div class="stat-label">Runtime Deps</div>
-            </div>
-        </div>
+            <!-- Hero Section -->
+            <section class="hero">
+                <h1 class="hero-title">Terminal Text Animation <span>Engine in Rust</span></h1>
+                <p class="hero-subtitle">
+                    A zero-dependency, ultra-fast engine powering 38 native ANSI animation effects. Available as a global CLI tool and embeddable Rust library crate.
+                </p>
+                <div class="hero-actions">
+                    <a href="#grid-section" class="cta-btn">
+                        <span>Explore All 38 Effects</span>
+                        <span>↓</span>
+                    </a>
+                    <a href="https://github.com/louzt/ttfx-rs" target="_blank" class="secondary-btn">
+                        <span>View Rust Crate Docs</span>
+                    </a>
+                </div>
+            </section>
 
-        <!-- Controls Bar with Clickable Carousel Badge (< >) -->
-        <div class="controls-bar">
-            <div class="carousel-group">
-                <span class="carousel-label">Preset Banner:</span>
-                <div class="carousel-badge-container">
-                    <button class="arrow-btn" onclick="cyclePreset(-1)">‹</button>
-                    <span class="preset-badge" id="preset-badge">LOUZT</span>
-                    <button class="arrow-btn" onclick="cyclePreset(1)">›</button>
+            <!-- Feature Highlights Grid -->
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">⚡</div>
+                    <div class="feature-title">2ms Cold Start & 120 FPS</div>
+                    <div class="feature-desc">Compiled natively in Rust with zero heavy runtime overhead, delivering instantaneous startup and smooth physics.</div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🛡️</div>
+                    <div class="feature-title">DEC 2026 Sync Rendering</div>
+                    <div class="feature-desc">Uses DEC Private Mode 2026 synchronized terminal updates to eliminate tearing and flickering across modern TTYs.</div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📦</div>
+                    <div class="feature-title">Dual CLI & Library Crate</div>
+                    <div class="feature-desc">Run directly via terminal pipes (`echo TEXT | ttfx matrix`) or import natively into any Rust application via `src/lib.rs`.</div>
                 </div>
             </div>
 
-            <div class="palette-options" id="palette-options"></div>
+            <!-- Minimal Stats Bar -->
+            <div class="stats-bar">
+                <div class="stat-item">
+                    <div class="stat-num" id="stat-effects">38</div>
+                    <div class="stat-label">Effects</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-num">354</div>
+                    <div class="stat-label">Parity Tests</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-num">3.3 MB</div>
+                    <div class="stat-label">Static Binary</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-num">2 ms</div>
+                    <div class="stat-label">Startup</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-num">0</div>
+                    <div class="stat-label">Runtime Deps</div>
+                </div>
+            </div>
+
+            <!-- Controls Bar with Clickable Carousel Badge (< >) -->
+            <div class="controls-bar" id="grid-section">
+                <div class="carousel-group">
+                    <span class="carousel-label">Preset Banner:</span>
+                    <div class="carousel-badge-container">
+                        <button class="arrow-btn" onclick="cyclePreset(-1)">‹</button>
+                        <span class="preset-badge" id="preset-badge">LOUZT</span>
+                        <button class="arrow-btn" onclick="cyclePreset(1)">›</button>
+                    </div>
+                </div>
+
+                <div class="palette-options" id="palette-options"></div>
+            </div>
+
+            <!-- 3 Columns Grid -->
+            <div class="effects-grid" id="grid"></div>
+
+            <footer>
+                <p>Crafted by <a href="https://github.com/louzt" target="_blank">Louzt</a> • Open Source under MIT OR Apache-2.0 • <a href="https://github.com/louzt/ttfx-rs" target="_blank">GitHub Repository</a></p>
+            </footer>
         </div>
-
-        <!-- 3 Columns Grid -->
-        <div class="effects-grid" id="grid"></div>
-
-        <footer>
-            <p>Crafted by <a href="https://github.com/louzt" target="_blank">Louzt</a> • Open Source under MIT OR Apache-2.0 • <a href="https://github.com/louzt/ttfx-rs" target="_blank">GitHub Repository</a></p>
-        </footer>
     </div>
 
     <script>
-        const presets = ["LOUZT", "LOUST", "4NV1L", "H3PH3ST"];
+        // BACKGROUND ANIMATED GRID OF DOTS THAT MORPH TO '+'
+        const bgCanvas = document.getElementById("bg-canvas");
+        const bgCtx = bgCanvas.getContext("2d");
+
+        function resizeCanvas() {
+            bgCanvas.width = window.innerWidth;
+            bgCanvas.height = window.innerHeight;
+        }
+        window.addEventListener("resize", resizeCanvas);
+        resizeCanvas();
+
+        let bgTime = 0;
+        function drawBgGrid() {
+            bgCtx.clearRect(0, 0, bgCanvas.width, bgCanvas.height);
+            const spacing = 28;
+            const cols = Math.ceil(bgCanvas.width / spacing);
+            const rows = Math.ceil(bgCanvas.height / spacing);
+
+            bgTime += 0.025;
+
+            for (let r = 0; r < rows; r++) {
+                for (let c = 0; c < cols; c++) {
+                    const x = c * spacing + 14;
+                    const y = r * spacing + 14;
+
+                    const noise = Math.sin(c * 0.2 + r * 0.2 + bgTime * 0.8);
+                    const isCross = noise > 0.85;
+
+                    bgCtx.fillStyle = isCross ? "rgba(0, 240, 255, 0.45)" : "rgba(255, 255, 255, 0.12)";
+                    
+                    if (isCross) {
+                        bgCtx.font = "10px monospace";
+                        bgCtx.textAlign = "center";
+                        bgCtx.textBaseline = "middle";
+                        bgCtx.fillText("+", x, y);
+                    } else {
+                        bgCtx.beginPath();
+                        bgCtx.arc(x, y, 1, 0, Math.PI * 2);
+                        bgCtx.fill();
+                    }
+                }
+            }
+            requestAnimationFrame(drawBgGrid);
+        }
+        drawBgGrid();
+
+        // ASCII FONT PRESETS
+        const presets = ["LOUZT", "LOUST", "4NV1L", "H3PH3ST", "CYBER", "DOOM"];
         let currentPresetIdx = 0;
 
-        // 100% PERFECTLY ALIGNED EVEN-WIDTH 2D BLOCK FONTS FOR ALL PRESETS
         const blockFonts = {
             "LOUZT": `
   ██╗      ██████╗ ██╗  ██╗███████╗████████╗
@@ -518,6 +750,22 @@
  ██╔══██║ ╚═══██╗██╔═══╝ ██╔══██║ ╚═══██╗╚════██║   ██║   
  ██║  ██║██████╔╝██║     ██║  ██║██████╔╝███████║   ██║   
  ╚═╝  ╚═╝╚═════╝ ╚═╝     ╚═╝  ╚═╝╚═════╝ ╚══════╝   ╚═╝   
+`,
+            "CYBER": `
+  ██████╗██╗   ██╗██████╗ ███████╗██████╗ 
+ ██╔════╝╚██╗ ██╔╝██╔══██╗██╔════╝██╔══██╗
+ ██║      ╚████╔╝ ██████╔╝█████╗  ██████╔╝
+ ██║       ╚██╔╝  ██╔══██╗██╔══╝  ██╔══██╗
+ ╚██████╗   ██║   ██████╔╝███████╗██║  ██║
+  ╚═════╝   ╚═╝   ╚═════╝ ╚══════╝╚═╝  ╚═╝
+`,
+            "DOOM": `
+  ██████╗  ██████╗  ██████╗ ███╗   ███╗
+  ██╔══██╗██╔═══██╗██╔═══██╗████╗ ████║
+  ██║  ██║██║   ██║██║   ██║██╔████╔██║
+  ██║  ██║██║   ██║██║   ██║██║╚██╔╝██║
+  ██████╔╝╚██████╔╝╚██████╔╝██║ ╚═╝ ██║
+  ╚═════╝  ╚═════╝  ╚═════╝ ╚═╝     ╚═╝
 `
         };
 
@@ -604,7 +852,7 @@
             });
         }
 
-        // EVEN-WIDTH ASCII LINE NORMALIZER (Prevents 2D warping/misalignment)
+        // EVEN-WIDTH ASCII LINE NORMALIZER
         function getNormalizedLines(artString) {
             const raw = artString.trim().split("\n");
             let maxLen = 0;
@@ -715,8 +963,8 @@
                                 break;
 
                             case "middleout":
-                                const midDist = Math.abs(rIdx - 2.5);
-                                const midRange = ((globalFrame % 25) / 25) * 3.5;
+                                const midDist = Math.abs(rIdx - (numRows / 2));
+                                const midRange = ((globalFrame % 25) / 25) * (numRows / 1.5);
                                 if (midDist <= midRange) {
                                     color = pal[0];
                                 } else {
@@ -787,10 +1035,10 @@
                                 break;
 
                             case "bouncyballs":
-                                const bounceCycle = Math.abs(Math.sin((globalFrame * 0.15) + (cIdx * 0.2)) * 4.5);
-                                if (rIdx < 6 - bounceCycle) {
+                                const bounceCycle = Math.abs(Math.sin((globalFrame * 0.15) + (cIdx * 0.2)) * (numRows - 1));
+                                if (rIdx < (numRows - 1) - bounceCycle) {
                                     opacity = 0.12;
-                                    if (Math.abs(rIdx - (6 - bounceCycle)) < 0.8) {
+                                    if (Math.abs(rIdx - ((numRows - 1) - bounceCycle)) < 0.8) {
                                         displayChar = "o";
                                         color = pal[1];
                                     }
@@ -882,7 +1130,7 @@
 
                             case "orbittingvolley":
                                 const orbAngle = (globalFrame * 0.2) + (cIdx * 0.15);
-                                const orbY = Math.sin(orbAngle) * 2.5 + 2.5;
+                                const orbY = Math.sin(orbAngle) * 2.5 + (numRows / 2);
                                 if (Math.abs(rIdx - orbY) < 0.8) {
                                     color = "#ffffff";
                                     displayChar = "●";
