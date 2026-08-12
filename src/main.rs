@@ -1,27 +1,21 @@
 #![allow(dead_code)]
-#![allow(unknown_lints)] // for forward-compat with newer clippy lints
-#![allow(clippy::manual_is_multiple_of)] // is_multiple_of() requires nightly
-mod charstate;
-mod easing;
-mod effects;
-mod engine;
-mod gradient;
-#[cfg(test)]
-mod tests;
+#![allow(unknown_lints)]
+#![allow(clippy::manual_is_multiple_of)]
 
 use clap::Parser;
-use engine::{run_animation, Grid};
 use rand::seq::SliceRandom;
 use std::io::{self, Read};
+use ttfx_rs::effects::ALL_EFFECTS;
+use ttfx_rs::engine::{run_animation, Grid};
 
 fn build_effects_help() -> String {
     let mut s = String::from("TTE Effects:\n");
-    for info in effects::ALL_EFFECTS {
+    for info in ALL_EFFECTS {
         if !info.extra_effect {
             s.push_str(&format!("  {:<20}{}\n", info.name, info.description));
         }
     }
-    let extras: Vec<_> = effects::ALL_EFFECTS
+    let extras: Vec<_> = ALL_EFFECTS
         .iter()
         .filter(|e| e.extra_effect)
         .collect();
@@ -31,16 +25,16 @@ fn build_effects_help() -> String {
             s.push_str(&format!("  {:<20}{}\n", info.name, info.description));
         }
     }
-    s.push_str("\nEx: ls -a | rtte decrypt\n    echo HELLO | rtte --random-effect");
+    s.push_str("\nEx: ls -a | ttfx decrypt\n    echo HELLO | ttfx --random-effect");
     s
 }
 
 #[derive(Parser)]
 #[command(
-    name = "rtte",
+    name = "ttfx",
     version = env!("CARGO_PKG_VERSION"),
     disable_version_flag = true,
-    about = "Rust port of terminaltexteffects (tte).",
+    about = "High-performance Rust port of terminaltexteffects (ttfx).",
     after_long_help = build_effects_help(),
 )]
 struct Cli {
@@ -99,22 +93,22 @@ fn main() {
     let mut rng = rand::thread_rng();
     let effect_name = if cli.random_effect {
         let mut pool: Vec<&str> = if let Some(ref inc) = cli.include_effects {
-            effects::ALL_EFFECTS
+            ALL_EFFECTS
                 .iter()
                 .filter(|e| inc.iter().any(|i| i == e.name))
                 .map(|e| e.name)
                 .collect()
         } else if let Some(ref exc) = cli.exclude_effects {
-            effects::ALL_EFFECTS
+            ALL_EFFECTS
                 .iter()
                 .filter(|e| !exc.iter().any(|x| x == e.name))
                 .map(|e| e.name)
                 .collect()
         } else {
-            effects::ALL_EFFECTS.iter().map(|e| e.name).collect()
+            ALL_EFFECTS.iter().map(|e| e.name).collect()
         };
         if pool.is_empty() {
-            pool = effects::ALL_EFFECTS.iter().map(|e| e.name).collect();
+            pool = ALL_EFFECTS.iter().map(|e| e.name).collect();
         }
         pool.choose(&mut rng).unwrap().to_string()
     } else if let Some(ref e) = cli.effect {
@@ -126,7 +120,7 @@ fn main() {
 
     let mut grid = Grid::from_input(&input);
 
-    let info = effects::ALL_EFFECTS
+    let info = ALL_EFFECTS
         .iter()
         .find(|e| e.name == effect_name)
         .unwrap_or_else(|| {
