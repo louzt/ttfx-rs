@@ -957,6 +957,10 @@
                         <div class="faq-answer">Compiled natively in Rust with zero heavy runtime overhead, <code>ttfx-rs</code> cold-starts in ~2ms, making it ideal for high-speed terminal pipes, shell scripts, and CLI banners.</div>
                     </div>
                     <div class="faq-card">
+                        <div class="faq-question">🦀 How does ttfx-rs integrate with Ratatui & TUIs?</div>
+                        <div class="faq-answer">Unlike competing CLI tools that hijack <code>stdout</code>, <code>ttfx-rs</code> provides <code>Grid::render_to_string()</code> to query ANSI animation frames as a string buffer and embed them inside Ratatui widgets!</div>
+                    </div>
+                    <div class="faq-card">
                         <div class="faq-question">🤖 How do LLMs & AI Assistants trigger text animations?</div>
                         <div class="faq-answer">Every effect card includes a one-click <code>LLM</code> button that copies pre-structured system prompts with custom <code>GradientBuilder</code> hex colors to instruct Claude, Gemini, ChatGPT, or AGY agents.</div>
                     </div>
@@ -972,9 +976,24 @@
                         <div class="faq-question">🎨 How do I customize text presets and gradient themes?</div>
                         <div class="faq-answer">Cycle through text presets with the <code>‹ 🔀 ›</code> controls or open the <code>🎨 Color Studio & Map</code> modal to adjust 4-stop gradient palettes in real-time at 120 FPS.</div>
                     </div>
-                    <div class="faq-card">
-                        <div class="faq-question">🛡️ Are there any external runtime dependencies?</div>
-                        <div class="faq-answer">Zero! <code>ttfx-rs</code> has no external dynamic library dependencies and compiles down to a compact 3.3 MB static binary with full cross-platform ANSI support.</div>
+                </div>
+            </section>
+
+            <!-- Architectural Wins & Ratatui Integration Banner -->
+            <section class="faq-section" style="margin-top: 2.5rem; background: rgba(0, 240, 255, 0.03); border: 1px solid rgba(0, 240, 255, 0.2); border-radius: 12px; padding: 2rem 1.5rem;">
+                <h2 class="faq-title" style="margin-bottom: 1.25rem;">🏆 Strategic Architectural Wins & TUI Integration</h2>
+                <div class="faq-grid">
+                    <div class="faq-card" style="background: #040508;">
+                        <div class="faq-question">🦀 Ratatui & TUI Widget Ergonomics</div>
+                        <div class="faq-answer">
+                            CLI tools traditionally hijack <code>stdout</code>, preventing embedded TUI usage. <code>ttfx-rs</code> solves this with <code>grid.render_to_string()</code>, letting developers capture ANSI animation frames into custom Ratatui <code>Paragraph</code> or <code>Canvas</code> widgets seamlessly!
+                        </div>
+                    </div>
+                    <div class="faq-card" style="background: #040508;">
+                        <div class="faq-question">✨ DEC 2026 Synchronized Frame Buffer</div>
+                        <div class="faq-answer">
+                            Prevents tearing and screen jitter by wrapping output frames in DEC 2026 escape codes (<code>\x1b[?2026h</code> ... <code>\x1b[?2026l</code>), supported by modern GPU terminal emulators (Kitty, Alacritty, WezTerm, Ghostty).
+                        </div>
                     </div>
                 </div>
             </section>
