@@ -896,23 +896,23 @@
             <div class="color-pickers-grid">
                 <div class="picker-box">
                     <span class="picker-label">Stop 1 (Lead)</span>
-                    <input type="color" id="picker-0" class="color-input" value="#00f0ff" onchange="updateCustomColor(0, this.value)">
-                    <input type="text" id="hex-0" class="hex-input" value="#00f0ff" onchange="updateCustomColor(0, this.value)">
+                    <input type="color" id="picker-0" class="color-input" value="#00f0ff" oninput="updateCustomColor(0, this.value)">
+                    <input type="text" id="hex-0" class="hex-input" value="#00f0ff" oninput="updateCustomColor(0, this.value)">
                 </div>
                 <div class="picker-box">
                     <span class="picker-label">Stop 2 (Fade)</span>
-                    <input type="color" id="picker-1" class="color-input" value="#ff007f" onchange="updateCustomColor(1, this.value)">
-                    <input type="text" id="hex-1" class="hex-input" value="#ff007f" onchange="updateCustomColor(1, this.value)">
+                    <input type="color" id="picker-1" class="color-input" value="#ff007f" oninput="updateCustomColor(1, this.value)">
+                    <input type="text" id="hex-1" class="hex-input" value="#ff007f" oninput="updateCustomColor(1, this.value)">
                 </div>
                 <div class="picker-box">
                     <span class="picker-label">Stop 3 (Accent)</span>
-                    <input type="color" id="picker-2" class="color-input" value="#9d4edd" onchange="updateCustomColor(2, this.value)">
-                    <input type="text" id="hex-2" class="hex-input" value="#9d4edd" onchange="updateCustomColor(2, this.value)">
+                    <input type="color" id="picker-2" class="color-input" value="#9d4edd" oninput="updateCustomColor(2, this.value)">
+                    <input type="text" id="hex-2" class="hex-input" value="#9d4edd" oninput="updateCustomColor(2, this.value)">
                 </div>
                 <div class="picker-box">
                     <span class="picker-label">Stop 4 (Glow)</span>
-                    <input type="color" id="picker-3" class="color-input" value="#ffffff" onchange="updateCustomColor(3, this.value)">
-                    <input type="text" id="hex-3" class="hex-input" value="#ffffff" onchange="updateCustomColor(3, this.value)">
+                    <input type="color" id="picker-3" class="color-input" value="#ffffff" oninput="updateCustomColor(3, this.value)">
+                    <input type="text" id="hex-3" class="hex-input" value="#ffffff" oninput="updateCustomColor(3, this.value)">
                 </div>
             </div>
 
@@ -1147,6 +1147,11 @@
                 customStudioColors[idx] = value;
                 document.getElementById(`picker-${idx}`).value = value;
                 document.getElementById(`hex-${idx}`).value = value;
+                currentPaletteKey = "custom";
+                palettes.custom = { name: "Custom Palette", colors: [...customStudioColors] };
+                // LIVE REAL-TIME CARD RENDERING
+                initPalettes();
+                buildGrid();
             }
         }
 
@@ -1161,6 +1166,9 @@
                     currentPaletteKey = key;
                     customStudioColors = [...pal.colors];
                     syncModalInputs();
+                    // LIVE REAL-TIME CARD RENDERING
+                    initPalettes();
+                    buildGrid();
                 };
                 modalPresetsContainer.appendChild(btn);
             });
