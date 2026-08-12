@@ -12,6 +12,7 @@
 ## Key Features
 
 * **38 Native ANSI Animation Effects**: Full physics-driven particle animations (Matrix, Fireworks, Burn, Blackhole, Laser Etch, VHS Tape, Decrypt, Synthgrid, etc.).
+* **LLM-Friendly Architecture**: Built-in prompts for AI Coding Assistants (Claude Code, Gemini, Antigravity, ChatGPT) to instantly generate, install, and execute text effects.
 * **Dual-Target Crate Architecture**: Functions as both a standalone CLI binary (`ttfx`) and an embeddable Rust library crate (`lib.rs`).
 * **Ultra-Fast & Lightweight**: 3.3 MB static binary, 2ms startup time, 120 FPS rendering engine.
 * **100% Zero Runtime Dependencies**: Pure Rust implementation with cross-platform terminal ANSI support via `crossterm`.
@@ -50,6 +51,18 @@ cat my_logo.txt | ttfx burn
 
 # Apply a random effect:
 echo "4NV1L RUNTIME" | ttfx --random-effect
+```
+
+---
+
+## LLM-Friendly Prompting
+
+`ttfx-rs` is designed to be easily triggered by AI agents and LLM prompts. You can instruct your AI assistant with the following prompt format:
+
+```text
+Install and use ttfx-rs to render an animated terminal text banner for '<YOUR_TEXT>' using the '<EFFECT_NAME>' effect:
+1. Install: `cargo install --git https://github.com/louzt/ttfx-rs`
+2. Execute: `echo "<YOUR_TEXT>" | ttfx <EFFECT_NAME>`
 ```
 
 ---
