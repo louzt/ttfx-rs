@@ -1145,13 +1145,11 @@
         function updateCustomColor(idx, value) {
             if (/^#[0-9A-F]{6}$/i.test(value)) {
                 customStudioColors[idx] = value;
-                document.getElementById(`picker-${idx}`).value = value;
-                document.getElementById(`hex-${idx}`).value = value;
+                if (document.getElementById(`picker-${idx}`)) document.getElementById(`picker-${idx}`).value = value;
+                if (document.getElementById(`hex-${idx}`)) document.getElementById(`hex-${idx}`).value = value;
                 currentPaletteKey = "custom";
                 palettes.custom = { name: "Custom Palette", colors: [...customStudioColors] };
-                // LIVE REAL-TIME CARD RENDERING
                 initPalettes();
-                buildGrid();
             }
         }
 
@@ -1166,9 +1164,7 @@
                     currentPaletteKey = key;
                     customStudioColors = [...pal.colors];
                     syncModalInputs();
-                    // LIVE REAL-TIME CARD RENDERING
                     initPalettes();
-                    buildGrid();
                 };
                 modalPresetsContainer.appendChild(btn);
             });
